@@ -14,7 +14,8 @@ Assumptions:
 
 ### Deliverables:
 - Monorepo setup
-- Provision Kubernetes dev cluster `gameguessr-dev` (GKE Autopilot) via **Terraform**
+- Provision Kubernetes cluster (GKE Autopilot) via **Terraform**
+- Create `gameguessr-dev` namespace
 - Helm base chart
 - CI pipeline
 - Authentik deployed
@@ -87,7 +88,7 @@ Multiplayer match is fully playable through the first two phases.
 - Runtime validation of request and response payloads (if appropriate)
 
 ### DevOps:
-- Provision Kubernetes prod cluster `gameguessr-prod` (GKE Autopilot) via **Terraform**
+- Create `gameguessr-prod` namespace
 - Production deployment via CI/CD
 - Horizontal scaling tests
 - Observability baseline

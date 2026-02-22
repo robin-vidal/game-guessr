@@ -14,10 +14,11 @@
 ---
 
 ## E2 — Infrastructure & Kubernetes Deployment
-- Infrastructure-as-Code: GKE Autopilot clusters provisioned via **Terraform**
+- Infrastructure-as-Code: Single GKE Autopilot cluster provisioned via **Terraform**
 - Each microservice containerized
 - Helm charts for application deployment
-- ConfigMaps + Secrets properly scoped per cluster
+- Separate `dev` and `prod` namespaces
+- ConfigMaps + Secrets properly scoped per namespace
 
 ---
 

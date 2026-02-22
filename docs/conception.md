@@ -200,7 +200,7 @@ graph TB
 ```
 
 #### Architecture Decision Records (ADR)
-To accompany the software architecture, major technical decisions (e.g., using Kafka vs REST for scoring, **2 distinct Kubernetes clusters** vs 1 shared cluster) will be documented as Architecture Decision Records (ADR) in the [`docs/adr/`](./adr/) directory.
+To accompany the software architecture, major technical decisions (e.g., using Kafka vs REST for scoring, **1 vs 2 Kubernetes clusters**) will be documented as Architecture Decision Records (ADR) in the [`docs/adr/`](./adr/) directory.
 
 ### 4. DevOps Platform
 
@@ -209,4 +209,4 @@ To accompany the software architecture, major technical decisions (e.g., using K
 - **CI/CD Pipeline**: 
   - Pull Requests trigger Docker image builds, linting, formatting, and unit tests (targeting only the changed sub-repositories).
   - Merges to `main` push the image to a registry and trigger a manual or automated Helm deployment.
-- **Infrastructure**: **Two distinct Kubernetes clusters** (GKE Autopilot) provisioned via **Terraform** (IaC): `gameguessr-dev` for development/testing and `gameguessr-prod` strictly for release. Helm is used to deploy charts, ConfigMaps, and Secrets to the targeted cluster. GitOps (ArgoCD) is excluded for the MVP but planned for Post-Release.
+- **Infrastructure**: **Single Kubernetes cluster** (GKE Autopilot) provisioned via **Terraform** (IaC) containing multiple namespaces (e.g., `gameguessr-dev` and `gameguessr-prod`). Helm is used to deploy charts, ConfigMaps, and Secrets. GitOps (ArgoCD) is excluded for the MVP but planned for Post-Release.
