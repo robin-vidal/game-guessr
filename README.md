@@ -10,7 +10,7 @@ The project features a **scalable microservices architecture**, real-time multip
 - Marie-Lou Allain (`marie-lou.allain`)
 - Naïm Chefirat (`naim.chefirat`)
 - Michaël Rousseau (`michael.rousseau`)
-- Robin Vidal (`robin.vidal.pro@gmail.com`)
+- Robin Vidal (`robin.vidal`)
 
 ---
 
