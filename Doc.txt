@@ -1,0 +1,581 @@
+# MVP PRODUCT STRATEGY
+
+## MVP Objective
+
+Deliver a **fully authenticated multiplayer experience** where users can:
+
+- Log in via OAuth (Using Epita Identity provider if possible)
+- Create private rooms
+- Invite friends via link
+- Play a complete 3-phase round
+- Compete in real-time
+- See leaderboard results
+- Run entirely on Kubernetes with CI/CD
+
+---
+
+## MVP Scope
+
+### Included in MVP
+
+- OAuth login (Authentik + Epita provider)
+- Persistent user accounts (linked to OAuth identity)
+- Private rooms with invite links
+- Host role
+- 1 curated game pack (Mario Kart)
+- 3-phase gameplay
+- Real-time multiplayer sync
+- Leaderboard
+- Kafka-based scoring
+- Redis real-time lobby state
+- Kubernetes deployment with Helm
+- CI/CD pipeline
+
+## Explicitly Out of Scope (Post-MVP)
+
+- Multiple game packs
+- Public rooms (auto-matchmaking)
+- Advanced anti-cheat
+- Seasonal rankings
+- Global leader board
+- Advanced analytics dashboards
+- ArgoCD GitOps
+- Mobile device support
+
+# PRODUCT BACKLOG
+
+---
+
+# EPIC A — Authentication & User Management (MVP Critical)
+
+---
+
+## A1 — OAuth Login (Authentik+Epita Integration)
+
+### User Story A1.1 — Login via OAuth
+
+> As a Player
+> 
+> 
+> I want to log in using OAuth
+> 
+> So that I can securely access multiplayer features.
+> 
+
+**Acceptance Criteria:**
+
+- "Login" button redirects to Epita Identity provider
+- OAuth Authorization Code Flow
+- Backend validates JWT
+- User created in database if first login
+- Session stored securely
+- Logout supported
+
+---
+
+## A2 — Persistent User Profile
+
+### User Story A2.1 — Persist Player Identity
+
+> As a Player
+> 
+> 
+> I want my identity persisted
+> 
+> So that I can see my username and results across matches.
+> 
+
+**Acceptance Criteria:**
+
+- Unique internal user ID
+- Username from OAuth claims
+- Display name visible in rooms & leaderboard
+- Display picture if Epita provider lets us access it
+
+# EPIC B — Room System (Public & Private)
+
+---
+
+## B1 — Public Matchmaking
+
+### User Story B1.1 — Join Public Room
+
+> As a Player
+> 
+> 
+> I want to join a public match
+> 
+> So that I can play with random users.
+> 
+
+**Acceptance Criteria:**
+
+- Click “Play Public”
+- Assigned to available room
+- New room auto-created if none exists
+- Real-time lobby display
+
+---
+
+## B2 — Private Room Creation
+
+### User Story B2.1 — Create Private Room
+
+> As a Player
+> 
+> 
+> I want to create a private room
+> 
+> So that I can play only with invited friends.
+> 
+
+**Acceptance Criteria:**
+
+- "Create Private Room" button
+- Unique room ID generated
+- Room not discoverable publicly
+- Player becomes Host
+
+---
+
+## B3 — Invite System
+
+### User Story B3.1 — Generate Invite Link
+
+> As a Host
+> 
+> 
+> I want to share an invite link
+> 
+> So that friends can join my room.
+> 
+
+**Acceptance Criteria:**
+
+- Unique token-based invite URL
+- Token tied to room
+- Token expires when match starts
+- Only authenticated users can join
+
+---
+
+## B4 — Host Capabilities (MVP Minimal)
+
+### User Story B4.1 — Start Match
+
+> As a Host
+> 
+> 
+> I want to start the match manually
+> 
+> So that all players are ready.
+> 
+
+**Acceptance Criteria:**
+
+- Start button visible only to host
+- Match transitions to ROUND 1
+- MATCH_STARTED event emitted
+
+---
+
+# EPIC C — Core Gameplay Loop
+
+---
+
+## C1 — 3D Exploration Phase
+
+### User Story C1.1 — Explore Spawned Environment
+
+> As a Player
+> 
+> 
+> I want to fly freely in the 3D level
+> 
+> So that I can explore clues.
+> 
+
+**Acceptance Criteria:**
+
+- Noclip iframe loads
+- Controlled spawn coordinates
+- All players share same spawn
+- [**TODO]:** Player movement is restricted to a specific range??
+
+---
+
+## C2 — Phase 1: Guess Game
+
+### User Story C2.1 — Submit Game Guess
+
+> As a Player
+> 
+> 
+> I want autocomplete game input
+> 
+> So that I can quickly submit my answer.
+> 
+
+**Acceptance Criteria:**
+
+- Autocomplete
+- Validated against pack
+- First correct guess unlocks Phase 2
+- GAME_GUESSED event sent to Kafka
+
+Scoring:
+
+- Binary correct/incorrect
+
+---
+
+## C3 — Phase 2: Guess Level
+
+### User Story C3.1 — Level Guess
+
+> As a Player
+> 
+> 
+> I want to guess the level
+> 
+> So that I can refine my answer.
+> 
+
+**Acceptance Criteria:**
+
+- Locked until Phase 1 correct
+- Time-based bonus
+- LEVEL_GUESSED event
+
+---
+
+## C4 — Phase 3: Pinpoint Location
+
+### User Story C4.1 — Drop Pin on Map
+
+> As a Player
+> 
+> 
+> I want to place a marker
+> 
+> So that I can guess the exact coordinates.
+> 
+
+**Acceptance Criteria:**
+
+- Top-down 2D map
+- Click to drop marker
+- Coordinates sent to backend
+- Backend calculates Euclidean distance
+- SPOT_GUESSED event
+
+Scoring:
+
+- 0–5000 based on distance
+
+---
+
+## C5 — Round & Match Results
+
+### User Story C5.1 — Round Summary
+
+> As a Player
+> 
+> 
+> I want to see my accuracy
+> 
+> So that I understand my score.
+> 
+
+Displays:
+
+- True location
+- Player guess
+- Distance
+- Points earned
+
+---
+
+### User Story C5.2 — Match Leaderboard
+
+> As a Player
+> 
+> 
+> I want final rankings
+> 
+> So that I know who won.
+> 
+
+Displays:
+
+- Sorted ranking
+- Highlight winner
+
+# EPIC D — Real-Time Infrastructure
+
+---
+
+## D1 — WebSocket Gateway
+
+- Lobby updates
+- Timer synchronization
+- Round transitions
+- Score updates
+
+---
+
+## D2 — Redis Integration
+
+- Room state caching
+- Player presence
+- Countdown synchronization
+
+---
+
+## D3 — Kafka Event System
+
+**[TODO]:** voir avec team archi (aka Michael)
+
+Events:
+
+- MATCH_CREATED
+- MATCH_STARTED
+- GAME_GUESSED
+- LEVEL_GUESSED
+- SPOT_GUESSED
+- ROUND_FINISHED
+- MATCH_FINISHED
+
+Score Service consumes events asynchronously.
+
+# EPIC E — DevOps & Infrastructure
+
+---
+
+## E1 — Monorepo Structure
+
+**[TODO]:** voir avec team archi (aka Michael)
+
+- `/frontend`
+- `/services/auth`
+- `/services/match`
+- `/services/game`
+- `/services/score`
+- `/helm`
+- `/infra`
+
+---
+
+## E2 — Kubernetes Deployment
+
+- Each microservice containerized
+- Helm charts
+- Dev namespace
+- ConfigMaps + Secrets
+
+---
+
+## E3 — CI/CD
+
+- PR → build Docker images
+- Merge → push image + deploy via Helm
+- All pushes → Lint + Format + Run unit tests
+- Workflows are only ran for the sub-repositories that were changed (a push on backend mustn’t trigger frontend workflows)
+- Automated integration tests
+
+---
+
+# SPRINT PLANNING
+
+Assumptions:
+
+- 2 Backend
+- 1 Frontend
+- 1 DevOps/Fullstack
+- 2-week sprints
+- MVP in 4 sprints
+
+---
+
+# Sprint 0 — Foundations & Auth
+
+Goal: Secure access & base architecture
+
+### Deliverables:
+
+- Monorepo setup
+- Kubernetes dev cluster
+- Helm base chart
+- CI pipeline
+- Authentik deployed
+- OAuth integration (backend)
+- User persistence
+- Protected API routes
+- Initialize a React frontend repository
+
+Outcome:
+
+User can log in and see protected homepage.
+
+---
+
+# Sprint 1 — Rooms & Invitations
+
+Goal: Multiplayer entry point
+
+### Backend:
+
+- Room service
+- Public matchmaking
+- Private room creation
+- Invite token generation
+- WebSocket lobby
+
+### Frontend:
+
+- Room UI
+- Invite link display
+- Lobby player list
+- Host start button
+
+Outcome:
+
+Users can log in, create/join public or private rooms, see players in real-time.
+
+---
+
+# Sprint 2 — Full 2-Phase Gameplay (Multiplayer)
+
+Goal: Core loop functional (except phase 3)
+
+### Backend:
+
+- Match lifecycle management
+- Kafka integration
+- Score service
+
+### Frontend:
+
+- Noclip integration
+- Game guess
+- Level guess
+- Round transitions
+
+Outcome:
+
+Multiplayer match fully playable.
+
+---
+
+# Sprint 3 — Stabilization & Deployment to Production
+
+Goal: MVP Ready
+
+### Backend:
+
+- Error handling
+- Basic persistence
+- Logging
+- Runtime payload validation (REST & Kafka)
+- Polish Swagger REST API specification
+- Unit tests
+
+### Frontend:
+
+- Leaderboard screen
+- Summary visuals
+- UI and UX polish
+- Error handling
+- Runtime validation of request and response payloads (if we can)
+
+### DevOps:
+
+- Production K8s deployment
+- Horizontal scaling tests
+- Observability baseline
+- e2e tests
+
+Outcome:
+
+Stable MVP deployed online.
+
+---
+
+# MVP Definition of Done
+
+MVP is complete when:
+
+- Deployed to production Kubernetes cluster
+- User can authenticate via Authentik & Epita
+- User profile persisted
+- Public room playable
+- Private room with invite playable
+- 2 first stages functional
+- Scores computed asynchronously via Kafka
+- 4–8 concurrent users stable
+- CI/CD fully automated
+
+---
+
+# Post-Release User Stories
+
+## Phase 3 — Spatial Precision (Completion of Gameplay Loop)
+
+### 1.1 Drop Pin Mechanic
+
+**User Story**
+
+As a competitive player
+
+I want to drop a pin representing my guessed `(x, y, z)` location
+
+So that spatial precision becomes part of the scoring.
+
+**Acceptance Criteria**
+
+- Phase 3 unlocks after Phase 2 completion.
+- Player can place and adjust a pin on a 2D top-down map (or controlled 3D interface).
+- Submission locks the answer.
+- Coordinates are sent to the backend for validation.
+
+---
+
+### 1.2 Euclidean Distance Scoring
+
+**User Story**
+
+As a player
+
+I want my score to be calculated based on distance from the true spawn
+
+So that precision is rewarded proportionally.
+
+**Acceptance Criteria**
+
+- Backend computes 3D Euclidean distance.
+- Score range (e.g., 0–5000 points).
+- Distance and awarded points are displayed in round results.
+- Score is aggregated into the total match score.
+
+---
+
+## 2. Public Matchmaking Enhancements
+
+### 2.1 Dedicated Matchmaking Queue
+
+**User Story**
+
+As a player
+
+I want to enter a matchmaking queue
+
+So that I am automatically grouped with other available players.
+
+**Acceptance Criteria**
+
+- A queue system assigns players to rooms automatically.
+- Rooms are created when minimum player threshold is reached.
+- Timeout logic handles low-traffic scenarios.
+
+---
+

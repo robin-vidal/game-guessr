@@ -1,0 +1,24 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    // Point the Java extension at Corretto 21 (the JDK that builds this project)
+    "java.jdt.ls.java.home": "/Users/michael.rousseau/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "/Users/michael.rousseau/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home",
+            "default": true
+        }
+    ],
+    // Maven extension also uses Java 21
+    "maven.terminal.customEnv": [
+        {
+            "environmentVariable": "JAVA_HOME",
+            "value": "/Users/michael.rousseau/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home"
+        }
+    ],
+    // Integrated terminal picks up Java 21 by default
+    "terminal.integrated.env.osx": {
+        "JAVA_HOME": "/Users/michael.rousseau/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home",
+        "PATH": "/Users/michael.rousseau/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home/bin:${env:PATH}"
+    }
+}
