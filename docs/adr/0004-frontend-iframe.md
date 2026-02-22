@@ -10,7 +10,7 @@ We will use an **Iframe Bridge Architecture**. The main Frontend Service (React)
 
 ## Rationale
 - **Maintainability**: Forking a complex WebGL rendering engine like `noclip` would require immense specialized knowledge and make merging upstream updates difficult. By treating `noclip` as a black box inside an iframe, we guarantee we can easily upgrade if they add new features or bug fixes.
-- **Separation of Concerns**: The custom React frontend will purely handle the Game UI (menus, lobbies, chat, scoreboards, 2D map for pin dropping), while the iframe remains 100% focused on 3D WebGL rendering.
+- **Separation of Concerns**: The custom React frontend will purely handle the Game UI (menus, lobbies, chat, scoreboards), while the iframe remains 100% focused on 3D WebGL rendering.
 - **Security & Sandboxing**: Iframes naturally sandbox the heavy WebGL execution context from our DOM-heavy React application, potentially preventing the 3D renderer's requestAnimationFrame loops from blocking UI thread operations.
 
 ## Consequences

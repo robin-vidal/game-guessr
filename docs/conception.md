@@ -40,19 +40,20 @@ Each round is divided into three progressive phases to reward both general knowl
 | --- | --- | --- | --- |
 | **Phase 1: The Game** | Identify the title (e.g., *Super Mario 64*) | Search bar with autocompletion | Binary (Correct/Incorrect) |
 | **Phase 2: The Map** | Identify the specific level | Locked until Phase 1 is solved; Autocomplete list | Time-based bonus |
-| **Phase 3: The Spot** | Pinpoint exact `(x, y, z)` coords | 2D Top-down map or 3D "Drop Pin" | Euclidean Distance (`0–5000` pts) |
+| **Phase 3: The Spot (Post-MVP)** | Pinpoint exact `(x, y, z)` coords | 2D Top-down map or 3D "Drop Pin" | Euclidean Distance (`0–5000` pts) |
 
 ### MVP Scope & Discarded Features
 #### Included in MVP
 - OAuth login (Authentik + Epita provider) with persistent user profiles.
 - Private rooms with invite links & Host role.
 - 1 curated game pack (Mario Kart).
-- 3-phase gameplay (Explore, Guess Game, Guess Level, Drop Pin).
+- 2-phase gameplay (Explore, Guess Game & Level).
 - Real-time multiplayer synchronization (WebSocket & Redis).
 - Leaderboard & Kafka-based scoring.
 - Kubernetes deployment on Google Cloud Platform with GKE Autopilot, Helm & CI/CD pipeline.
 
 #### Out of Scope (Post-MVP)
+- **Phase 3: The Spot (Drop Pin/Coordinates guessing).**
 - Multiple game packs & Room configuration by Host.
 - Public rooms (auto-matchmaking, ELO, dedicated queues).
 - Advanced anti-cheat, seasonal rankings, global leaderboards.

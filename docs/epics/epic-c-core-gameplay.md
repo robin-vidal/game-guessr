@@ -46,7 +46,7 @@
 
 ---
 
-## C4 — Phase 3: Pinpoint Location
+## C4 — Phase 3: Pinpoint Location (Post-MVP)
 
 ### User Story C4.1 — Drop Pin on Map
 > **As a Player**  
