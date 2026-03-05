@@ -89,6 +89,71 @@ graph TD
 
 ---
 
+## Cloud Architecture (Defense Optimized)
+The infrastructure has been specifically designed to ensure high availability during the final academic defense while remaining strictly under a **300€/month budget**. 
+
+To achieve this, managed database services were discarded in favor of self-hosted solutions within a single Google Kubernetes Engine (GKE) cluster, and GitHub Container Registry (`ghcr.io`) is used instead of GCP Artifact Registry.
+
+```mermaid
+graph TD
+    classDef gcp fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef gh fill:#f5f5f5,stroke:#24292f,stroke-width:2px;
+    classDef ext fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+
+    User([Player / Professor]) -->|HTTPS| DNS
+    
+    subgraph "External Providers"
+        DNS[Domaine (Ex: .site)]:::ext
+        GH[GitHub Container Registry<br/>`ghcr.io`]:::gh
+    end
+
+    subgraph "Google Cloud Platform (GCP)"
+        LB[Cloud Load Balancing<br/>IP Publique + SSL]:::gcp
+        GCS[(Cloud Storage<br/>Terraform State)]:::gcp
+        
+        subgraph "GKE Zonal Cluster"
+            Ingress[Nginx Ingress]
+            
+            subgraph "Stateless Microservices (Pods)"
+                Gateway[Gateway API]
+                Front[Frontend React]
+                SB[Spring Boot Services]
+            end
+            
+            subgraph "Stateful Services (Pods)"
+                PG[(PostgreSQL)]
+                Redis[(Redis)]
+                Kafka[Kafka / Zookeeper]
+                Auth[Authentik IdP]
+            end
+        end
+    end
+
+    DNS --> LB
+    LB --> Ingress
+    Ingress --> Gateway
+    Ingress --> Front
+    Ingress --> Auth
+    Gateway --> SB
+    
+    SB --> PG
+    SB --> Redis
+    SB --> Kafka
+    Auth --> PG
+    Auth --> Redis
+    
+    %% Registry pull
+    GKE Zonal Cluster -.->|Image Pulls| GH
+```
+
+### Justification of Technological Choices
+1. **GitHub Container Registry (`ghcr.io`)**: Used to store our Docker images for free via GitHub Actions, saving the cost of GCP Artifact Registry.
+2. **GKE Zonal Cluster**: We deploy a single zonal cluster to benefit from the free-tier management fee and use standard (or Autopilot with strict limits) nodes. 
+3. **Stateful Pods over Managed Services**: Deploying PostgreSQL, Redis, and Kafka as Pods with Persistent Volumes directly in GKE avoids the massive costs associated with Cloud SQL and Memorystore, which are over-engineered for a project with limited traffic.
+4. **Cloud Storage**: A simple bucket costing pennies per month to securely share the Terraform deploy state (`.tfstate`).
+
+---
+
 ## Services & Microservices
 | **Service** | **Stack** | **Responsibility** |
 | --- | --- | --- |
