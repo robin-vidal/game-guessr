@@ -89,7 +89,7 @@ graph TD
 
 ---
 
-## Cloud Architecture (Defense Optimized)
+## Cloud Architecture
 The infrastructure has been specifically designed to ensure high availability during the final academic defense while remaining strictly under a **300€/month budget**. 
 
 To achieve this, managed database services were discarded in favor of self-hosted solutions within a single Google Kubernetes Engine (GKE) cluster, and GitHub Container Registry (`ghcr.io`) is used instead of GCP Artifact Registry.
@@ -103,12 +103,12 @@ graph TD
     User([Player / Professor]) -->|HTTPS| DNS
     
     subgraph "External Providers"
-        DNS[Domaine (Ex: .site)]:::ext
-        GH[GitHub Container Registry<br/>`ghcr.io`]:::gh
+        DNS["Domaine (Ex: .site)"]:::ext
+        GH["GitHub Container Registry<br/>`ghcr.io`"]:::gh
     end
 
     subgraph "Google Cloud Platform (GCP)"
-        LB[Cloud Load Balancing<br/>IP Publique + SSL]:::gcp
+        LB["Cloud Load Balancing<br/>IP Publique + SSL"]:::gcp
         GCS[(Cloud Storage<br/>Terraform State)]:::gcp
         
         subgraph "GKE Zonal Cluster"
@@ -143,7 +143,10 @@ graph TD
     Auth --> Redis
     
     %% Registry pull
-    GKE Zonal Cluster -.->|Image Pulls| GH
+    Gateway -.->|Image Pulls| GH
+    Front -.->|Image Pulls| GH
+    SB -.->|Image Pulls| GH
+    Auth -.->|Image Pulls| GH
 ```
 
 ### Justification of Technological Choices
