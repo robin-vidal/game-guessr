@@ -1,0 +1,141 @@
+spring:
+  application:
+    name: scoring-service
+
+  # ── JPA / Hibernate ──────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # ── Kafka ─────────────────────────────────────────────────────────────
+  kafka:
+    consumer:
+      group-id: scoring-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.gameguessr.*"
+        spring.json.value.default.type: "com.gameguessr.scoring.infrastructure.messaging.event.GuessSubmittedEvent"
+        spring.json.use.type.headers: false
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+# ── Server ───────────────────────────────────────────────────────────────
+server:
+  port: 8084
+  servlet:
+    context-path: /
+
+# ── Actuator ─────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# ── SpringDoc / Swagger ───────────────────────────────────────────────────
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /api-docs
+
+# ── Custom Kafka topic names ──────────────────────────────────────────────
+kafka:
+  topics:
+    guess-submitted: player.guess.submitted
+    score-calculated: score.calculated
+
+# ── Scoring defaults ─────────────────────────────────────────────────────
+scoring:
+  points:
+    game-correct: 1000
+    level-base: 500
+    level-time-bonus-max: 500
+    spot-max: 5000
+
+---
+# ════════════════════════════════════════════════
+# Profile: dev  (H2 in-memory, no real Kafka)
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:mem:scoringdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+# ════════════════════════════════════════════════
+# Profile: local  (Postgres + Kafka in Docker, service on host)
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/scoringdb
+    username: gameuser
+    password: gamepass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+# ════════════════════════════════════════════════
+# Profile: docker  (all services in Docker)
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:5432/${DB_NAME:scoringdb}
+    username: ${DB_USER:gameuser}
+    password: ${DB_PASSWORD:gamepass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
