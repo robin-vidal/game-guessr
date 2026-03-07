@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: leaderboard-service
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: leaderboard-service
+
+kafka:
+  topics:
+    score-calculated: score.calculated
+
+leaderboard:
+  global-key: "leaderboard:global"
+  room-key-prefix: "leaderboard:room:"
+  default-top-n: 100
