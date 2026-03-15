@@ -163,5 +163,15 @@ services:
     profiles:
       - app
 
+  # ── noclip frontend ──────────────────────────────────────────────
+  noclip-frontend:
+    build:
+      context: ./noclip
+      dockerfile: Dockerfile
+    container_name: gg_noclip
+    ports:
+      - "8000:80"
+    restart: unless-stopped
+
 volumes:
   postgres_data:

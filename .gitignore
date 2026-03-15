@@ -31,6 +31,10 @@ out/
 !.vscode/settings.json
 !.vscode/extensions.json
 
+# ── IDE — Neovim  ─────────────────────────────────────────────────────────
+.nvim.lua
+mise.local.toml
+
 # ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
 .DS_Store?
