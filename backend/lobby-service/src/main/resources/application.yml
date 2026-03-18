@@ -1,0 +1,108 @@
+spring:
+  application:
+    name: lobby-service
+
+  # ── Kafka ─────────────────────────────────────────────────────────────
+  kafka:
+    consumer:
+      group-id: lobby-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+# ── Server ───────────────────────────────────────────────────────────────
+server:
+  port: 8083
+  servlet:
+    context-path: /
+
+# ── Actuator ─────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# ── SpringDoc / Swagger ───────────────────────────────────────────────────
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /api-docs
+
+# ── Custom Kafka topic names ──────────────────────────────────────────────
+kafka:
+  topics:
+    room-events: game.room.events
+
+# ── Room defaults ─────────────────────────────────────────────────────────
+lobby:
+  room:
+    max-players: 8
+    default-round-count: 5
+    default-time-limit-seconds: 60
+    code-length: 6
+    ttl-minutes: 120
+
+---
+# ════════════════════════════════════════════════
+# Profile: dev  (Embedded Redis mock, no real Kafka)
+# Run with: mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+# ════════════════════════════════════════════════
+# Profile: local  (Redis + Kafka in Docker, service on host)
+# Run with: mvn spring-boot:run -Dspring-boot.run.profiles=local
+# Requires: docker compose up -d  (from project root)
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+# ════════════════════════════════════════════════
+# Profile: docker  (all services in Docker)
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: 6379
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
