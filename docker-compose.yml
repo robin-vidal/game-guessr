@@ -166,7 +166,7 @@ services:
   # ── noclip frontend ──────────────────────────────────────────────
   noclip-frontend:
     build:
-      context: ./noclip
+      context: ./backend/noclip
       dockerfile: Dockerfile
     container_name: gg_noclip
     ports:
