@@ -1,0 +1,88 @@
+spring:
+  application:
+    name: leaderboard-service
+
+  # ── Kafka ─────────────────────────────────────────────────────────────
+  kafka:
+    consumer:
+      group-id: leaderboard-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+# ── Server ───────────────────────────────────────────────────────────────
+server:
+  port: 8085
+  servlet:
+    context-path: /
+
+# ── Actuator ─────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# ── SpringDoc / Swagger ───────────────────────────────────────────────────
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /api-docs
+
+# ── Custom Kafka topic names ──────────────────────────────────────────────
+kafka:
+  topics:
+    score-calculated: score.calculated
+
+# ── Leaderboard defaults ─────────────────────────────────────────────────
+leaderboard:
+  global-key: "leaderboard:global"
+  room-key-prefix: "leaderboard:room:"
+  default-top-n: 100
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: 6379
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}

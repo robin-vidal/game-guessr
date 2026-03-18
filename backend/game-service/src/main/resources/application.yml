@@ -21,6 +21,10 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.gameguessr.game.infrastructure.messaging.event"
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
 
 # ── Server ───────────────────────────────────────────────────────────────
 server:
@@ -85,7 +89,39 @@ spring:
 
 ---
 # ════════════════════════════════════════════════
-# Profile: docker  (PostgreSQL + real Kafka)
+# Profile: local  (Postgres + Kafka in Docker, service on host)
+# Run with: mvn spring-boot:run -Dspring-boot.run.profiles=local
+# Requires: docker compose up -d  (from project root)
+# ════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gamedb
+    username: gameuser
+    password: gamepass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+    show-sql: true
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/seed.sql
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+---
+# ════════════════════════════════════════════════
+# Profile: docker  (all services in Docker)
 # ════════════════════════════════════════════════
 spring:
   config:
@@ -103,4 +139,4 @@ spring:
       ddl-auto: update
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
