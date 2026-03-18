@@ -119,7 +119,7 @@ class WarpedRenderer implements SceneGfx {
                 if (typeof desc === "string")
                     continue;
                 if ((desc as CrashWarpedScene).index === this.state.levelToLoad) {
-                    setTimeout(() => window.main.ui.sceneSelect.onscenedescselected(desc), 50);
+                    setTimeout(() => { if (window.main.ui) window.main.ui.sceneSelect.onscenedescselected(desc); }, 50);
                 }
             }
         }

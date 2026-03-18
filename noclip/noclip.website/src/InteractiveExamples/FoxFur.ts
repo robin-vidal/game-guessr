@@ -478,7 +478,7 @@ export class FoxFur implements SceneDesc {
         const bodyTex = await fetchPNG(context.dataFetcher, `${pathBase}/furtex.png`);
         const r = new SceneRenderer(device);
         const o = new FurObj(device, r.getCache(), foxFurObjText, bodyTex);
-        window.main.ui.debugFloaterHolder.bindPanel(o);
+        window.main.ui?.debugFloaterHolder.bindPanel(o);
         r.fur = o;
         r.obj.push(o);
         return r;

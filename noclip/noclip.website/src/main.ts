@@ -355,7 +355,7 @@ class Main {
     public toplevel: HTMLElement;
     public canvas: HTMLCanvasElement;
     public viewer: Viewer;
-    public ui: UI;
+    public ui: UI | null = null;
     public saveManager = GlobalSaveManager;
 
     private preferredPlatforms: GfxPlatform[] = [];
@@ -402,11 +402,15 @@ class Main {
         this.toplevel.ondragover = (e) => {
             if (!e.dataTransfer || !e.dataTransfer.types.includes('Files'))
                 return;
-            this.ui.dragHighlight.style.display = 'block';
+            if(this.ui) {
+                this.ui.dragHighlight.style.display = 'block';
+            }
             e.preventDefault();
         };
         this.toplevel.ondragleave = (e) => {
-            this.ui.dragHighlight.style.display = 'none';
+            if(this.ui) {
+                this.ui.dragHighlight.style.display = 'none';
+            }
             e.preventDefault();
         };
         this.toplevel.ondrop = this._onDrop.bind(this);
@@ -422,23 +426,26 @@ class Main {
 
         this.animationLoop.onupdate = this.animationLoopOnUpdate.bind(this);
 
-        this._makeUI();
+        if(import.meta.env.PUBLIC_ENABLE_UI === "true") {
+            this._makeUI();
+        }
 
-        this.dataFetcher = new DataFetcher(this.ui.sceneSelect);
+        this.dataFetcher = new DataFetcher(this.ui ? this.ui.sceneSelect : null);
         await this.dataFetcher.init();
 
         this.droppedFileGroup = { id: "drops", name: "Dropped Files", sceneDescs: [] };
         sceneGroups.push('Other');
         sceneGroups.push(this.droppedFileGroup);
 
-        this.ui.sceneSelect.setSceneDatabase(this.sceneDatabase);
+        if(this.ui)
+            this.ui.sceneSelect.setSceneDatabase(this.sceneDatabase);
 
         window.onhashchange = this._onHashChange.bind(this);
 
         if (this.currentSceneDesc === null)
             this._loadInitialStateFromHash();
 
-        if (this.currentSceneDesc === null) {
+        if (this.currentSceneDesc === null && this.ui) {
             // Make the user choose a scene if there's nothing loaded by default...
             this.ui.sceneSelect.setExpanded(true);
         }
@@ -513,17 +520,19 @@ class Main {
             this.webXRContext.onsupportedchanged = this._syncWebXRSettingsVisible.bind(this);
 
             this.viewer.onstatistics = (statistics: RenderStatistics): void => {
-                this.ui.statisticsPanel.addRenderStatistics(statistics);
+                if (this.ui)
+                    this.ui.statisticsPanel.addRenderStatistics(statistics);
             };
             this.viewer.oncamerachanged = (force: boolean) => {
                 this._autoSaveState(force);
             };
             this.viewer.inputManager.ondraggingmodechanged = () => {
-                this.ui.setDraggingMode(this.viewer.inputManager.getDraggingMode());
+                if (this.ui)
+                    this.ui.setDraggingMode(this.viewer.inputManager.getDraggingMode());
             };
 
             // HACK(jstpierre): Change the initialization here.
-            if (this.ui !== undefined) {
+            if (this.ui !== undefined && this.ui !== null) {
                 this.ui.setViewer(this.viewer);
                 this._syncWebXRSettingsVisible();
             }
@@ -560,7 +569,8 @@ class Main {
             return;
 
         this.isPlaying = v;
-        this.ui.playPauseButton.setIsPlaying(v);
+        if(this.ui)
+            this.ui.playPauseButton.setIsPlaying(v);
 
         if (IS_DEVELOPMENT)
             this._saveCurrentTimeState(this._getCurrentSceneDescId()!);
@@ -626,7 +636,8 @@ class Main {
         if (inputManager.isKeyDownEventTriggered('KeyZ'))
             this._toggleUI();
         if (inputManager.isKeyDownEventTriggered('KeyT'))
-            this.ui.sceneSelect.expandAndFocus();
+            if(this.ui)
+                this.ui.sceneSelect.expandAndFocus();
         for (let i = 1; i <= 9; i++) {
             if (inputManager.isKeyDownEventTriggered('Digit'+i)) {
                 if (this.currentSceneDesc) {
@@ -663,11 +674,13 @@ class Main {
                 }
                 mat4.getTranslation(this.viewer.xrCameraController.offset, this.viewer.camera.worldMatrix);
                 this.webXRContext.xrSession.addEventListener('end', () => {
-                    this.ui.toggleWebXRCheckbox(false);
+                    if (this.ui)
+                        this.ui.toggleWebXRCheckbox(false);
                 });
             } catch(e) {
                 console.error("Failed to start XR");
-                this.ui.toggleWebXRCheckbox(false);
+                if (this.ui)
+                    this.ui.toggleWebXRCheckbox(false);
             }
         } else {
             this.webXRContext.end();
@@ -695,7 +708,8 @@ class Main {
             this.viewer.update(this.updateInfo);
         }
 
-        this.ui.update();
+        if (this.ui)
+            this.ui.update();
     };
 
     private _onRequestAnimationFrame = (): void => {
@@ -709,7 +723,8 @@ class Main {
     };
 
     private async _onDrop(e: DragEvent) {
-        this.ui.dragHighlight.style.display = 'none';
+        if(this.ui)
+            this.ui.dragHighlight.style.display = 'none';
 
         if (!e.dataTransfer || e.dataTransfer.files.length === 0)
             return;
@@ -852,7 +867,8 @@ class Main {
             this._saveCurrentTimeState(currentSceneDescId);
 
         const saveState = `${currentSceneDescId};${sceneStateStr}`;
-        this.ui.setShareSaveState(saveState);
+        if(this.ui)
+            this.ui.setShareSaveState(saveState);
 
         let shouldUpdateURL = forceUpdateURL;
         if (!shouldUpdateURL) {
@@ -887,7 +903,8 @@ class Main {
         let scenePanels: Panel[] = [];
         if (scene.createPanels)
             scenePanels = scene.createPanels();
-        this.ui.setScenePanels(scenePanels);
+        if(this.ui)
+            this.ui.setScenePanels(scenePanels);
 
         // Force time to play when loading a map.
         this.setIsPlaying(true);
@@ -920,7 +937,8 @@ class Main {
         }
 
         this._saveStateAndUpdateURL();
-        this.ui.sceneChanged();
+        if(this.ui)
+            this.ui.sceneChanged();
     }
 
     private _onSceneDescSelected(sceneDesc: SceneDesc) {
@@ -956,7 +974,8 @@ class Main {
         // Tear down old scene.
         if (this.dataFetcher !== null)
             this.dataFetcher.abort();
-        this.ui.destroyScene();
+        if(this.ui)
+            this.ui.destroyScene();
         if (this.viewer.scene && !this.destroyablePool.includes(this.viewer.scene))
             this.destroyablePool.push(this.viewer.scene);
         this.viewer.setScene(null);
@@ -981,16 +1000,18 @@ class Main {
             sceneDesc.hidden = false;
 
         this.currentSceneDesc = sceneDesc;
-        this.ui.sceneSelect.setCurrentDesc(sceneGroup, this.currentSceneDesc);
-
-        this.ui.sceneSelect.setProgress(0);
+        if(this.ui) {
+            this.ui.sceneSelect.setCurrentDesc(sceneGroup, this.currentSceneDesc);
+            this.ui.sceneSelect.setProgress(0);
+        }
 
         const device = this.viewer.gfxDevice;
         const dataFetcher = this.dataFetcher;
         dataFetcher.reset();
         const dataShare = this.dataShare;
         const uiContainer: HTMLElement = document.createElement('div');
-        this.ui.sceneUIContainer.appendChild(uiContainer);
+        if(this.ui)
+            this.ui.sceneUIContainer.appendChild(uiContainer);
         const destroyablePool: Destroyable[] = this.destroyablePool;
         const inputManager = this.viewer.inputManager;
         inputManager.reset();
@@ -1047,11 +1068,13 @@ class Main {
     }
 
     private _syncWebXRSettingsVisible(): void {
-        this.ui.xrSettings.setVisible(this.webXRContext.isSupported);
+        if(this.ui)
+            this.ui.xrSettings.setVisible(this.webXRContext.isSupported);
     }
 
     private _toggleUI(visible?: boolean) {
-        this.ui.toggleUI(visible);
+        if(this.ui)
+            this.ui.toggleUI(visible);
     }
 
     private _getSceneDownloadPrefix() {

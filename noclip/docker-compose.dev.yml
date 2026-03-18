@@ -1,0 +1,25 @@
+services:
+  noclip-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./noclip.website/src:/app/src
+      - ./noclip.website/rsbuild.config.ts:/app/rsbuild.config.ts:ro
+      - ./noclip.website/tsconfig.json:/app/tsconfig.json:ro
+      - ./noclip.website/rust/src:/app/rust/src
+      - ./noclip.website/rust/noclip-macros:/app/rust/noclip-macros
+      - ./noclip.website/rust/Cargo.toml:/app/rust/Cargo.toml:ro
+      - ./noclip.website/rust/Cargo.lock:/app/rust/Cargo.lock:ro
+      - ./noclip.website/rust/.cargo:/app/rust/.cargo:ro
+      - ./noclip.website/public:/app/public:ro
+      - ./noclip.website/.env:/app/.env:ro
+      - noclip-node-modules:/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - PUBLIC_ENABLE_UI=true
+
+volumes:
+  noclip-node-modules:

@@ -172,6 +172,8 @@ services:
     ports:
       - "8000:80"
     restart: unless-stopped
+    environment:
+      PUBLIC_ENABLE_UI: false
 
   # ── game-guessr frontend ────────────────────────────────────────────
   frontend:

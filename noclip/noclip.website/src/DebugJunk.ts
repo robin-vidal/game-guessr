@@ -324,6 +324,7 @@ function flashItem(item: any, fieldName: string, step: number = 0) {
 }
 
 function interactiveSliderSelect(items: any[], testItem: (itemIndex: number, v: boolean) => string | void, done: (itemIndex: number) => void): void {
+    if (!window.main.ui) return;
     const panel = window.main.ui.debugFloaterHolder.makeFloatingPanel('SliderSelect');
     const slider = new Slider();
     // Revert to default style for clarity
@@ -390,8 +391,9 @@ export function interactiveVizSliderSelect(items: any[], fieldName: string = 'vi
 }
 
 export function bindSliderSelect(items: any[], fieldName: string = 'visible', callback: ((obj: any, itemIndex: number) => void) | null = null): void {
+    if (!window.main.ui) return;
     interactiveVizSliderSelect(items, fieldName, (obj, itemIndex) => {
-        window.main.ui.debugFloaterHolder.bindPanel(obj);
+        window.main.ui!.debugFloaterHolder.bindPanel(obj);
         if (callback !== null)
             callback(obj, itemIndex);
     });

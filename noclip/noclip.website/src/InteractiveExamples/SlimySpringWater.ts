@@ -396,15 +396,17 @@ export class SlimySpringWaterDesc implements SceneDesc {
             renderer.waterModel = waterModel;
 
             // Create our DebugFloater.
-            const panel = window.main.ui.debugFloaterHolder.makeFloatingPanel('Controls');
-            panel.bindSliderChain("Alpha Threshold Low", waterModel, 'k3', 'g');
-            panel.bindSliderChain("Alpha Threshold High", waterModel, 'k3', 'r');
-            panel.bindSliderChain("Show Only Vertex Colors", waterModel, 'c2', 'a');
-            panel.bindSliderChain("Fade In Vertex Colors", waterModel, 'c1', 'a');
-            panel.bindSliderChain("Fade In Second Texture", waterModel, 'k2', 'r');
-            panel.bindCheckbox("Show Flower Box?", renderer, 'showFlowerBox');
-            panel.bindCheckbox("Rotate Camera?", renderer, 'shouldOrbit');
-            panel.bindCheckbox("Use Miptrick?", renderer, 'useMipmaps');
+            if (window.main.ui){
+                const panel = window.main.ui.debugFloaterHolder.makeFloatingPanel('Controls');
+                panel.bindSliderChain("Alpha Threshold Low", waterModel, 'k3', 'g');
+                panel.bindSliderChain("Alpha Threshold High", waterModel, 'k3', 'r');
+                panel.bindSliderChain("Show Only Vertex Colors", waterModel, 'c2', 'a');
+                panel.bindSliderChain("Fade In Vertex Colors", waterModel, 'c1', 'a');
+                panel.bindSliderChain("Fade In Second Texture", waterModel, 'k2', 'r');
+                panel.bindCheckbox("Show Flower Box?", renderer, 'showFlowerBox');
+                panel.bindCheckbox("Rotate Camera?", renderer, 'shouldOrbit');
+                panel.bindCheckbox("Use Miptrick?", renderer, 'useMipmaps');
+            }
         }
 
         return renderer;
