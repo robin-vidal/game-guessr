@@ -64,7 +64,7 @@ runs:
       uses: docker/build-push-action@v6
       with:
         context: ./${{ inputs.context }}
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         # Sur PR : pas de push — build uniquement pour valider le Dockerfile
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
