@@ -1,73 +1,116 @@
-# React + TypeScript + Vite
+# GameGuessr — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite frontend for the GameGuessr multiplayer game.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Concern       | Library                                 |
+| ------------- | --------------------------------------- |
+| Framework     | React 18 + TypeScript                   |
+| Bundler       | Vite 5                                  |
+| Routing       | React Router v6                         |
+| UI Components | shadcn/ui + Tailwind CSS                |
+| Server state  | TanStack Query v5 + Axios               |
+| Client state  | React Context + useReducer              |
+| Real-time     | Native WebSocket (custom hook)          |
+| 3D viewer     | noclip.website via iframe + postMessage |
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# 1. Install dependencies
+npm install
 
-## Expanding the ESLint configuration
+# 3. Configure environment
+cp .env.example .env.local
+# Edit .env.local with your local service URLs
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+# 4. Start dev server (http://localhost:3000)
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Adding shadcn/ui components
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+With `components.json` already configured, add any component with:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+npx shadcn-ui@latest add <component-name>
+# e.g.
+npx shadcn-ui@latest add input
+npx shadcn-ui@latest add dialog
+npx shadcn-ui@latest add badge
 ```
+
+## Project structure
+
+```
+src/
+├── components/
+│   ├── ui/                       # shadcn/ui components (auto-generated), global components
+│   └── pages/
+│       ├── components/           # Components specifics to the page
+│       └── page.tsx              # Page component
+├── features/
+│   ├── auth/
+│   │   └── AuthContext.tsx       # OAuth flow, JWT, user state
+│   ├── lobby/
+│   │   └── useLobby.ts           # TanStack Query hooks (rooms API)
+│   ├── game/
+│   │   ├── GameContext.tsx       # Round state, WS event reducer
+│   │   └── useGame.ts            # Guess submission mutations
+│   └── leaderboard/              # (to be implemented — Epic C5/F3)
+├── hooks/
+│   ├── useWebSocket.ts           # Subscribe to WS events
+│   └── useNoclipBridge.ts        # Attach/use the noclip iframe bridge
+├── lib/
+│   ├── api-client.ts             # Axios instance (Gateway)
+│   ├── noclip-bridge.ts          # postMessage abstraction (ADR 0004)
+│   ├── ws-client.ts              # WebSocket singleton
+│   └── utils.ts                  # cn() Tailwind helper
+├── router/
+│   ├── AppRouter.tsx             # Route definitions
+│   └── ProtectedRoute.tsx        # Auth guard
+├── types/
+│   └── index.ts                  # All shared TypeScript types + Kafka event contracts
+├── App.tsx                       # Provider composition
+└── main.tsx                      # React root
+```
+
+## Environment variables
+
+| Variable                  | Description                        |
+| ------------------------- | ---------------------------------- |
+| `VITE_API_BASE_URL`       | Gateway Service base URL           |
+| `VITE_WS_BASE_URL`        | WebSocket Sync Service URL         |
+| `VITE_OAUTH_REDIRECT_URL` | Authentik OAuth2 authorization URL |
+| `NOCLIP_FRONTEND_URL`     |  Noclip Front-end URL              |
+
+## Architecture notes
+
+### Noclip iframe bridge (ADR 0004)
+
+All communication with the `noclip.website` iframe goes through `src/lib/noclip-bridge.ts`.
+Never use `postMessage` directly — always go through `noclipBridge` or the `useNoclipBridge` / `useNoclipEvent` hooks.
+
+### WebSocket events
+
+The `wsClient` singleton in `src/lib/ws-client.ts` connects to the Sync Service when a room is joined.
+Typed event payloads are defined in `src/types/index.ts` and match the Kafka event contracts from Epic D3.
+Subscribe to events with the `useWebSocket(eventType, handler)` hook — it auto-unsubscribes on unmount.
+
+### State management
+
+- **Server state** (rooms, users, scores): TanStack Query — see `features/lobby/useLobby.ts` and `features/game/useGame.ts`
+- **Real-time game state** (round, phase, timer): `GameContext` reducer, fed by WebSocket events
+- **Auth state**: `AuthContext` reducer
+
+### What's left to implement (stubs)
+
+| File                                  | Epic   | What to build                     |
+| ------------------------------------- | ------ | --------------------------------- |
+| `GamePage.tsx` — `GameGuessPanel`     | C2     | Autocomplete input for game title |
+| `GamePage.tsx` — `LevelGuessPanel`    | C3     | Level name input                  |
+| `GamePage.tsx` — `SpotGuessPanel`     | C4     | 2D map + pin drop                 |
+| `GamePage.tsx` — `RoundResultsBanner` | C5     | True location reveal + score      |
+| `features/leaderboard/`               | C5, F3 | Friends leaderboard               |
+| `RoomPage.tsx` — settings UI          | B5     | Host room settings panel          |

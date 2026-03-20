@@ -1,16 +1,42 @@
-function App() {
-  const iframeUrl = import.meta.env.NOCLIP_FRONTEND_URL || 'http://localhost:8000';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GameProvider } from '@/contexts/game/GameContext';
+import { AppRouter } from '@/router/AppRouter';
+import { AuthProvider } from './contexts/auth/AuthProvider';
+import { Toaster } from './components/ui/sonner';
 
+/**
+ * Provider order matters:
+ * 1. QueryClientProvider  — TanStack Query, no deps
+ * 2. AuthProvider         — needs QueryClient (uses apiClient internally)
+ * 3. GameProvider         — needs Auth (connects WS with JWT)
+ * 4. AppRouter            — needs all of the above
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+    },
+  },
+});
+
+export default function App() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8">GameGuessr v0.1</h1>
-      <iframe
-        src={iframeUrl}
-        className="w-[66vw] max-w-[66vw] h-[37.125vw] max-h-[66vh] aspect-video"
-        title="Game"
-      />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <GameProvider>
+          <Toaster
+            toastOptions={{
+              style: {
+                background: 'hsl(var(--card))',
+                color: 'hsl(var(--card-foreground))',
+                border: '1px solid hsl(var(--border))',
+              },
+            }}
+          />
+          <AppRouter />
+        </GameProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
-
-export default App;
