@@ -9,8 +9,8 @@ export interface NamedArrayBufferSlice extends ArrayBufferSlice {
 }
 
 function getDataStorageBaseURL(isDevelopment: boolean): string {
-    if (isDevelopment)
-        return `/data`;
+    // if (isDevelopment)
+    //     return `/data`;
     return import.meta.env.PUBLIC_STORAGE_URL;
 }
 
@@ -279,7 +279,6 @@ export class DataFetcher {
     public doneRequestCount: number = 0;
     public maxParallelRequests: number = 10;
     public aborted: boolean = false;
-    public useDevelopmentStorage: boolean | null = null;
     private cache: Cache | null = null;
     private mounts: DataFetcherMount[] = [];
     public debug = IS_DEVELOPMENT;
@@ -288,13 +287,6 @@ export class DataFetcher {
     }
 
     public async init() {
-        if (IS_DEVELOPMENT) {
-            // Check for the existence of a /data directory.
-            // TODO(jstpierre): Put back this fix for rsbuild.
-            this.useDevelopmentStorage = true;
-        } else {
-            this.useDevelopmentStorage = false;
-        }
 
         const REQUEST_CACHE_NAME = `request-cache-v1`;
         try {
@@ -364,7 +356,7 @@ export class DataFetcher {
             this.debugDisplay.style.whiteSpace = `pre`;
             this.debugDisplay.style.textAlign = `right`;
             this.debugDisplay.style.pointerEvents = `none`;
-            window.main.ui.elem.appendChild(this.debugDisplay);
+            window.main.ui?.elem.appendChild(this.debugDisplay);
         }
 
         let S = '';
@@ -419,7 +411,7 @@ export class DataFetcher {
     }
 
     public getDataURLForPath(path: string): string {
-        return getDataURLForPath(path, assertExists(this.useDevelopmentStorage));
+        return getDataURLForPath(path, false);
     }
 
     public async fetchData(path: string, options: DataFetcherOptions = {}): Promise<NamedArrayBufferSlice> {

@@ -166,12 +166,14 @@ services:
   # ── noclip frontend ──────────────────────────────────────────────
   noclip-frontend:
     build:
-      context: ./noclip
+      context: ./backend/noclip
       dockerfile: Dockerfile
     container_name: gg_noclip
     ports:
       - "8000:80"
     restart: unless-stopped
+    environment:
+      PUBLIC_ENABLE_UI: false
 
   # ── game-guessr frontend ────────────────────────────────────────────
   frontend:
