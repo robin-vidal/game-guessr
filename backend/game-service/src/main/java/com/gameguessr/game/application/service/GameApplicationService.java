@@ -6,11 +6,14 @@ import com.gameguessr.game.domain.exception.MatchNotFoundException;
 import com.gameguessr.game.domain.model.GamePackEntry;
 import com.gameguessr.game.domain.model.Guess;
 import com.gameguessr.game.domain.model.GuessPhase;
+import com.gameguessr.game.domain.model.Level;
+import com.gameguessr.game.domain.model.LevelCoordinate;
 import com.gameguessr.game.domain.model.Match;
 import com.gameguessr.game.domain.model.MatchStatus;
 import com.gameguessr.game.domain.model.Round;
 import com.gameguessr.game.domain.port.inbound.GameUseCase;
 import com.gameguessr.game.domain.port.outbound.GameEventPublisher;
+import com.gameguessr.game.domain.port.outbound.LevelRepository;
 import com.gameguessr.game.domain.port.outbound.MatchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Application service implementing all game use cases.
- * Orchestrates domain logic and delegates to outbound ports.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class GameApplicationService implements GameUseCase {
     private static final int ROUNDS_PER_MATCH = 5;
 
     private final MatchRepository matchRepository;
+    private final LevelRepository levelRepository;
     private final GameEventPublisher gameEventPublisher;
 
     @Override
@@ -41,30 +43,25 @@ public class GameApplicationService implements GameUseCase {
     public Match startMatch(String roomCode, String hostId) {
         log.info("Starting match for room {}", roomCode);
 
-        if (matchRepository.existsByRoomCode(roomCode)) {
-            Match existing = matchRepository.findByRoomCode(roomCode).orElseThrow();
-            if (existing.getStatus() != MatchStatus.WAITING) {
-                throw new MatchAlreadyStartedException(roomCode);
-            }
+        Match existing = matchRepository.findByRoomCode(roomCode)
+                .orElseThrow(() -> new MatchNotFoundException(roomCode));
+
+        if (existing.getStatus() != MatchStatus.WAITING) {
+            throw new MatchAlreadyStartedException(roomCode);
         }
 
-        List<Round> rounds = buildRounds();
+        List<Round> rounds = buildRoundsFromLevels();
 
-        Match match = Match.builder()
-                .id(UUID.randomUUID())
-                .roomCode(roomCode)
-                .hostId(hostId)
-                .status(MatchStatus.IN_PROGRESS)
-                .rounds(rounds)
-                .currentRoundIndex(0)
-                .build();
+        Match match = existing.withStatus(MatchStatus.IN_PROGRESS)
+                .withRounds(rounds)
+                .withCurrentRoundIndex(0);
 
         Match saved = matchRepository.save(match);
 
-        // Notify WebSocket gateway about round 1 starting
         gameEventPublisher.publishRoundUpdate(roomCode, saved.currentRound());
 
-        log.info("Match {} started for room {} with {} rounds", saved.getId(), roomCode, ROUNDS_PER_MATCH);
+        log.info("Match {} started for room {} with {} rounds",
+                saved.getId(), roomCode, rounds.size());
         return saved;
     }
 
@@ -86,7 +83,6 @@ public class GameApplicationService implements GameUseCase {
         log.info("Player {} submitted {} guess for room {} round {}",
                 guess.getPlayerId(), guess.getPhase(), roomCode, currentRound.getRoundNumber());
 
-        // Publish to Kafka — Scoring Service consumes this
         gameEventPublisher.publishGuessSubmitted(roomCode, currentRound.getRoundNumber(), guess);
     }
 
@@ -98,8 +94,6 @@ public class GameApplicationService implements GameUseCase {
         return List.copyOf(match.getRounds());
     }
 
-    // ── Private helpers ──────────────────────────────────────────────
-
     private Match findActiveMatch(String roomCode) {
         Match match = matchRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new MatchNotFoundException(roomCode));
@@ -110,26 +104,38 @@ public class GameApplicationService implements GameUseCase {
         return match;
     }
 
-    /**
-     * Builds 5 rounds with placeholder (0, 0, 0) coordinates.
-     * TODO: wire up actual game pack data source (DB / external API) here.
-     */
-    private List<Round> buildRounds() {
+    private List<Round> buildRoundsFromLevels() {
+        List<Level> allLevels = new ArrayList<>(levelRepository.findAll());
+        if (allLevels.isEmpty()) {
+            throw new IllegalStateException("No levels available");
+        }
+
+        Collections.shuffle(allLevels);
+
+        int count = Math.min(ROUNDS_PER_MATCH, allLevels.size());
         List<Round> rounds = new ArrayList<>();
-        for (int i = 1; i <= ROUNDS_PER_MATCH; i++) {
+
+        for (int i = 0; i < count; i++) {
+            Level level = allLevels.get(i);
+            List<LevelCoordinate> coords = level.getCoordinates();
+            LevelCoordinate coord = coords.get(ThreadLocalRandom.current().nextInt(coords.size()));
+
             rounds.add(Round.builder()
                     .id(UUID.randomUUID())
-                    .roundNumber(i)
+                    .roundNumber(i + 1)
                     .gamePackEntry(GamePackEntry.builder()
-                            .gameId("mario-kart-8")
-                            .levelId("" + i)
-                            // spawnX / spawnY / spawnZ default to 0.0 via @Builder.Default
+                            .gameId(level.getGamePack())
+                            .levelId(level.getLevelName())
+                            .noclipHash(coord.getNoclipHash())
+                            .spawnX(coord.getSpawnX())
+                            .spawnZ(coord.getSpawnZ())
                             .build())
                     .currentPhase(GuessPhase.GAME)
                     .finished(false)
                     .startedAt(Instant.now().toEpochMilli())
                     .build());
         }
+
         return rounds;
     }
 

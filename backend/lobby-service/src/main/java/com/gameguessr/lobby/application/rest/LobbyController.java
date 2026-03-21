@@ -83,7 +83,7 @@ public class LobbyController {
         RoomSettings settings = RoomSettings.builder()
                 .roundCount(request.getRoundCount() != null ? request.getRoundCount() : 5)
                 .timeLimitSeconds(request.getTimeLimitSeconds() != null ? request.getTimeLimitSeconds() : 60)
-                .gamePack(request.getGamePack() != null ? request.getGamePack() : "mario-kart")
+                .gamePack(request.getGamePack() != null ? request.getGamePack() : "mario-kart-wii")
                 .build();
 
         Room room = lobbyUseCase.updateSettings(code, request.getPlayerId(), settings);

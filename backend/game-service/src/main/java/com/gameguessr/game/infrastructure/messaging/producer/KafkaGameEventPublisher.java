@@ -61,6 +61,7 @@ public class KafkaGameEventPublisher implements GameEventPublisher {
                 .startedAt(round.getStartedAt())
                 .gameId(round.getGamePackEntry().getGameId())
                 .levelId(round.getGamePackEntry().getLevelId())
+                .noclipHash(round.getGamePackEntry().getNoclipHash())
                 .build();
 
         kafkaTemplate.send(roundUpdateTopic, roomCode, event)

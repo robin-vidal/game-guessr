@@ -4,6 +4,7 @@ import com.gameguessr.game.domain.exception.MatchAlreadyStartedException;
 import com.gameguessr.game.domain.exception.MatchNotFoundException;
 import com.gameguessr.game.domain.model.*;
 import com.gameguessr.game.domain.port.outbound.GameEventPublisher;
+import com.gameguessr.game.domain.port.outbound.LevelRepository;
 import com.gameguessr.game.domain.port.outbound.MatchRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,9 @@ class GameApplicationServiceTest {
     private MatchRepository matchRepository;
 
     @Mock
+    private LevelRepository levelRepository;
+
+    @Mock
     private GameEventPublisher gameEventPublisher;
 
     @InjectMocks
@@ -38,28 +42,47 @@ class GameApplicationServiceTest {
 
     private static final String ROOM_CODE = "ABC123";
     private static final String HOST_ID = "host-uuid-1";
+    private static final String GAME_PACK_SLUG = "mario-kart-wii";
 
     private Match waitingMatch;
+    private List<Level> levels;
 
     @BeforeEach
     void setUp() {
-        List<Round> rounds = buildRounds();
         waitingMatch = Match.builder()
                 .id(UUID.randomUUID())
                 .roomCode(ROOM_CODE)
                 .hostId(HOST_ID)
+                .gamePack(GAME_PACK_SLUG)
                 .status(MatchStatus.WAITING)
-                .rounds(rounds)
+                .rounds(List.of())
                 .currentRoundIndex(0)
                 .build();
+
+        levels = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            levels.add(Level.builder()
+                    .id(UUID.randomUUID())
+                    .gamePack(GAME_PACK_SLUG)
+                    .levelName("Level " + (i + 1))
+                    .coordinates(List.of(
+                            LevelCoordinate.builder()
+                                    .id(UUID.randomUUID())
+                                    .noclipHash("hash-" + (i + 1))
+                                    .spawnX(i * 10.0)
+                                    .spawnZ(i * 20.0)
+                                    .build()))
+                    .build());
+        }
     }
 
     // ── startMatch ────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("startMatch — succeeds when room has no existing match")
-    void startMatch_noExistingMatch_createsNewMatch() {
-        when(matchRepository.existsByRoomCode(ROOM_CODE)).thenReturn(false);
+    @DisplayName("startMatch — succeeds when WAITING match exists with levels")
+    void startMatch_waitingMatch_createsRoundsFromLevels() {
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(waitingMatch));
+        when(levelRepository.findAll()).thenReturn(levels);
         when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Match result = service.startMatch(ROOM_CODE, HOST_ID);
@@ -74,7 +97,6 @@ class GameApplicationServiceTest {
     @DisplayName("startMatch — throws when match already IN_PROGRESS")
     void startMatch_alreadyInProgress_throws() {
         Match inProgress = waitingMatch.withStatus(MatchStatus.IN_PROGRESS);
-        when(matchRepository.existsByRoomCode(ROOM_CODE)).thenReturn(true);
         when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
 
         assertThatThrownBy(() -> service.startMatch(ROOM_CODE, HOST_ID))
@@ -82,18 +104,54 @@ class GameApplicationServiceTest {
     }
 
     @Test
-    @DisplayName("startMatch — round coordinates default to (0, 0, 0)")
-    void startMatch_rounds_defaultCoordinatesAreZero() {
-        when(matchRepository.existsByRoomCode(ROOM_CODE)).thenReturn(false);
+    @DisplayName("startMatch — throws when no match found")
+    void startMatch_noMatch_throws() {
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.startMatch(ROOM_CODE, HOST_ID))
+                .isInstanceOf(MatchNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("startMatch — rounds have level data")
+    void startMatch_rounds_haveLevelData() {
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(waitingMatch));
+        when(levelRepository.findAll()).thenReturn(levels);
         when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Match result = service.startMatch(ROOM_CODE, HOST_ID);
 
         result.getRounds().forEach(round -> {
-            assertThat(round.getGamePackEntry().getSpawnX()).isEqualTo(0.0);
-            assertThat(round.getGamePackEntry().getSpawnY()).isEqualTo(0.0);
-            assertThat(round.getGamePackEntry().getSpawnZ()).isEqualTo(0.0);
+            assertThat(round.getGamePackEntry().getGameId()).isEqualTo(GAME_PACK_SLUG);
+            assertThat(round.getGamePackEntry().getNoclipHash()).isNotNull();
+            assertThat(round.getGamePackEntry().getLevelId()).isNotNull();
         });
+    }
+
+    @Test
+    @DisplayName("startMatch — throws when no levels available")
+    void startMatch_noLevels_throws() {
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(waitingMatch));
+        when(levelRepository.findAll()).thenReturn(List.of());
+
+        assertThatThrownBy(() -> service.startMatch(ROOM_CODE, HOST_ID))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No levels available");
+    }
+
+    @Test
+    @DisplayName("startMatch — uses unique levels for each round")
+    void startMatch_uniqueLevelsPerRound() {
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(waitingMatch));
+        when(levelRepository.findAll()).thenReturn(levels);
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Match result = service.startMatch(ROOM_CODE, HOST_ID);
+
+        List<String> levelNames = result.getRounds().stream()
+                .map(r -> r.getGamePackEntry().getLevelId())
+                .toList();
+        assertThat(levelNames).doesNotHaveDuplicates();
     }
 
     // ── getCurrentRound ────────────────────────────────────────────────
@@ -101,7 +159,7 @@ class GameApplicationServiceTest {
     @Test
     @DisplayName("getCurrentRound — returns first round")
     void getCurrentRound_returnsFirstRound() {
-        Match inProgress = waitingMatch.withStatus(MatchStatus.IN_PROGRESS);
+        Match inProgress = buildInProgressMatch();
         when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
 
         Round round = service.getCurrentRound(ROOM_CODE);
@@ -124,13 +182,13 @@ class GameApplicationServiceTest {
     @Test
     @DisplayName("submitGuess — publishes event for GAME phase")
     void submitGuess_gamePhase_publishesEvent() {
-        Match inProgress = waitingMatch.withStatus(MatchStatus.IN_PROGRESS);
+        Match inProgress = buildInProgressMatch();
         when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
 
         Guess guess = Guess.builder()
                 .playerId("player-1")
                 .phase(GuessPhase.GAME)
-                .textAnswer("Mario Kart 8")
+                .textAnswer("Mario Kart Wii")
                 .submittedAt(Instant.now())
                 .build();
 
@@ -142,7 +200,7 @@ class GameApplicationServiceTest {
     @Test
     @DisplayName("submitGuess — throws InvalidPhaseException when LEVEL submitted before GAME")
     void submitGuess_levelBeforeGame_throws() {
-        Match inProgress = waitingMatch.withStatus(MatchStatus.IN_PROGRESS);
+        Match inProgress = buildInProgressMatch();
         when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
 
         Guess guess = Guess.builder()
@@ -156,23 +214,91 @@ class GameApplicationServiceTest {
                 .isInstanceOf(com.gameguessr.game.domain.exception.InvalidPhaseException.class);
     }
 
+    @Test
+    @DisplayName("submitGuess — throws InvalidPhaseException when SPOT submitted before SPOT phase")
+    void submitGuess_spotBeforeSpotPhase_throws() {
+        Match inProgress = buildInProgressMatch();
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.SPOT)
+                .guessX(100.0)
+                .guessY(50.0)
+                .guessZ(-200.0)
+                .submittedAt(Instant.now())
+                .build();
+
+        assertThatThrownBy(() -> service.submitGuess(ROOM_CODE, guess))
+                .isInstanceOf(com.gameguessr.game.domain.exception.InvalidPhaseException.class);
+    }
+
+    @Test
+    @DisplayName("submitGuess — throws IllegalStateException when match is not in progress")
+    void submitGuess_matchNotInProgress_throws() {
+        Match waiting = buildInProgressMatch().withStatus(MatchStatus.WAITING);
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(waiting));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.GAME)
+                .textAnswer("Mario Kart Wii")
+                .submittedAt(Instant.now())
+                .build();
+
+        assertThatThrownBy(() -> service.submitGuess(ROOM_CODE, guess))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    // ── getResults ────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("getResults — returns all rounds for the match")
+    void getResults_returnsAllRounds() {
+        Match inProgress = buildInProgressMatch();
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+
+        List<Round> result = service.getResults(ROOM_CODE);
+
+        assertThat(result).hasSize(1);
+        verify(matchRepository).findByRoomCode(ROOM_CODE);
+    }
+
+    @Test
+    @DisplayName("getResults — throws MatchNotFoundException when room not found")
+    void getResults_notFound_throws() {
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getResults(ROOM_CODE))
+                .isInstanceOf(MatchNotFoundException.class);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────
 
-    private List<Round> buildRounds() {
-        List<Round> rounds = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            rounds.add(Round.builder()
-                    .id(UUID.randomUUID())
-                    .roundNumber(i)
-                    .gamePackEntry(GamePackEntry.builder()
-                            .gameId("mario-kart-8")
-                            .levelId("TBD-" + i)
-                            .build())
-                    .currentPhase(GuessPhase.GAME)
-                    .finished(false)
-                    .startedAt(Instant.now().toEpochMilli())
-                    .build());
-        }
-        return rounds;
+    private Match buildInProgressMatch() {
+        Round round = Round.builder()
+                .id(UUID.randomUUID())
+                .roundNumber(1)
+                .gamePackEntry(GamePackEntry.builder()
+                        .gameId(GAME_PACK_SLUG)
+                        .levelId("Luigi Circuit")
+                        .noclipHash("mkwii/beginner_course;ShareData=test")
+                        .spawnX(0.0)
+                        .spawnZ(0.0)
+                        .build())
+                .currentPhase(GuessPhase.GAME)
+                .finished(false)
+                .startedAt(Instant.now().toEpochMilli())
+                .build();
+
+        return Match.builder()
+                .id(UUID.randomUUID())
+                .roomCode(ROOM_CODE)
+                .hostId(HOST_ID)
+                .gamePack(GAME_PACK_SLUG)
+                .status(MatchStatus.IN_PROGRESS)
+                .rounds(List.of(round))
+                .currentRoundIndex(0)
+                .build();
     }
 }

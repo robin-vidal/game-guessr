@@ -28,6 +28,7 @@ public class KafkaLobbyEventPublisher implements LobbyEventPublisher {
                 .roomCode(room.getRoomCode())
                 .hostId(room.getHostId())
                 .isPrivate(room.isPrivate())
+                .gamePack(room.getSettings() != null ? room.getSettings().getGamePack() : "mario-kart-wii")
                 .build();
 
         kafkaTemplate.send(roomEventsTopic, room.getRoomCode(), event)

@@ -1,0 +1,54 @@
+[
+    {
+        "game": "Mario Kart Wii",
+        "positions": [
+            {
+                "level": "Luigi Circuit",
+                "hash": "mkwii/beginner_course;ShareData=AEXBuUZx3-ULQlkUl~~=V:-*T5${@JUXsX,9d!lrV?drQ9z{9AUEyr}UsVfAV[",
+                "x": 0,
+                "z": 0
+            },
+            {
+                "level": "Luigi Circuit",
+                "hash": "mkwii/beginner_course;ShareData=AVp3F8=i499Un[yUZ*R,=F2E^RHffNUmjHXUJgLgV^;JU9v,w@Tj23D8]M=LWP",
+                "x": 0,
+                "z": 0
+            },
+            {
+                "level": "Wario's Goldmine",
+                "hash": "mkwii/truck_course;ShareData=AU$qLUYZ8+T6!z=9Lw(m=lmiaQ=wobUfY_SUPAn,V]M5KT^KBE9MfA1UZ-c8WP",
+                "x": 0,
+                "z": 0
+            },
+            {
+                "level": "Wario's Goldmine",
+                "hash": "mkwii/truck_course;ShareData=AM|&nUYu0)8};0~UeESmV*vje5+b4RUu[ChUUm_gWA_-m9x*Xc9N~4hUf*bWWP",
+                "x": 0,
+                "z": 0
+            },
+            {
+                "level": "DK Jungle's Parkway",
+                "hash": "mkwii/old_donkey_64;ShareData=AFb|?UiY-?T96mh9IJ5b+!ou*5!YoCUrc04UNVN6WG=i1UTz/|9SizdUZaMRV[",
+                "x": 0,
+                "z": 0
+            }
+        ]
+    },
+    {
+        "game": "Mario Kart DS",
+        "positions": [
+            {
+                "level": "Airship Fortress",
+                "hash": "mkds/airship_course;ShareData=AQFou9r{9D9J1-;UAZC}WV@7(6iW=CUl?O{UJpSuWp=7h9cEdlUOamb95XK@=2",
+                "x": 0,
+                "z": 0
+            },
+            {
+                "level": "Yoshi Circuit",
+                "hash": "mkds/old_yoshi_gc;ShareData=AE2a9UPHKT8{u7lUtBv*WT]qo6aL?&UsC;dT0!K+Wf^1+9z!LZ8qK(aUHt!w+^",
+                "x": 0,
+                "z": 0
+            }
+        ]
+    }
+]

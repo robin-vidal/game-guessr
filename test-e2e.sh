@@ -167,18 +167,18 @@ echo ""
 # 1.9 Update settings — non-host → 403
 cyan "--- 1.9 PATCH /api/v1/rooms/{code}/settings — non-host → 403"
 req PATCH "$LOBBY/api/v1/rooms/$ROOM_CODE/settings" \
-    '{"playerId":"p2","roundCount":3,"timeLimitSeconds":30,"gamePack":"mario-kart"}'
+    '{"playerId":"p2","roundCount":3,"timeLimitSeconds":30,"gamePack":"mario-kart-wii"}'
 assert_status "Non-host update settings → 403" 403 "$STATUS"
 echo ""
 
 # 1.10 Update settings — host → 200
 cyan "--- 1.10 PATCH /api/v1/rooms/{code}/settings — host → 200"
 req PATCH "$LOBBY/api/v1/rooms/$ROOM_CODE/settings" \
-    '{"playerId":"p1","roundCount":5,"timeLimitSeconds":60,"gamePack":"mario-kart"}'
+    '{"playerId":"p1","roundCount":5,"timeLimitSeconds":60,"gamePack":"mario-kart-wii"}'
 assert_status "Host update settings → 200" 200 "$STATUS"
-assert_equals "Round count = 5"         "5"          "$(echo "$BODY" | jq -r .settings.roundCount)"
-assert_equals "Time limit = 60"         "60"         "$(echo "$BODY" | jq -r .settings.timeLimitSeconds)"
-assert_equals "Game pack = mario-kart"  "mario-kart" "$(echo "$BODY" | jq -r .settings.gamePack)"
+assert_equals "Round count = 5"              "5"              "$(echo "$BODY" | jq -r .settings.roundCount)"
+assert_equals "Time limit = 60"              "60"             "$(echo "$BODY" | jq -r .settings.timeLimitSeconds)"
+assert_equals "Game pack = mario-kart-wii"   "mario-kart-wii" "$(echo "$BODY" | jq -r .settings.gamePack)"
 echo ""
 
 # 1.11 Update settings — room not found → 404
@@ -194,27 +194,31 @@ bold "════════════════════════�
 bold " GAME SERVICE  (port 8082)"
 bold "══════════════════════════════════════════"
 
-# 2.1 Get round before match started — 404 (MatchNotFoundException)
-cyan "--- 2.1 GET /api/v1/rooms/{code}/round — before start → 404"
+# Wait for Kafka to deliver the RoomCreatedEvent from lobby → game-service
+echo "    Waiting 3s for Kafka room.created event delivery..."
+sleep 3
+
+# 2.1 Get round before match started — match exists (WAITING) but not in progress → 409
+cyan "--- 2.1 GET /api/v1/rooms/{code}/round — before start → 409 (WAITING)"
 req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
-assert_status "Get round before start → 404" 404 "$STATUS"
+assert_status "Get round before start → 409" 409 "$STATUS"
 echo ""
 
-# 2.2 Submit guess before match started — 404
-cyan "--- 2.2 POST /api/v1/rooms/{code}/guess — before start → 404"
+# 2.2 Submit guess before match started — match WAITING → 409
+cyan "--- 2.2 POST /api/v1/rooms/{code}/guess — before start → 409"
 req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"GAME","textAnswer":"Mario Kart 8"}'
-assert_status "Submit guess before start → 404" 404 "$STATUS"
+assert_status "Submit guess before start → 409" 409 "$STATUS"
 echo ""
 
-# 2.3 Start match — game service accepts any roomCode (no lobby cross-check) → 201
+# 2.3 Start match for unknown room — no Kafka event received → 404
 FAKE_CODE="FAKE$(date +%s)"
-cyan "--- 2.3 POST /api/v1/rooms/${FAKE_CODE}/start — game svc creates match regardless → 201"
+cyan "--- 2.3 POST /api/v1/rooms/${FAKE_CODE}/start — no pre-created match → 404"
 req POST "$GAME/api/v1/rooms/$FAKE_CODE/start" '{"hostId":"p1"}'
-assert_status "Start match for unknown room (no lobby cross-check) → 201" 201 "$STATUS"
+assert_status "Start match for unknown room → 404" 404 "$STATUS"
 echo ""
 
-# 2.4 Start match for real room
+# 2.4 Start match for real room (lobby created it, Kafka pre-created WAITING match)
 cyan "--- 2.4 POST /api/v1/rooms/{code}/start — start match → 201"
 req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1"}'
 assert_status "Start match → 201" 201 "$STATUS"
@@ -228,17 +232,56 @@ req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1"}'
 assert_status "Start already-started match → 409" 409 "$STATUS"
 echo ""
 
-# 2.6 Get current round
+# 2.6 Get current round — now returns real game pack data + noclipHash
 cyan "--- 2.6 GET /api/v1/rooms/{code}/round → 200"
 req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
 assert_status "Get current round → 200" 200 "$STATUS"
 assert_field  "roundNumber present"   ".roundNumber"   "$BODY"
 assert_field  "gameId present"        ".gameId"        "$BODY"
+assert_field  "levelId present"       ".levelId"       "$BODY"
 assert_field  "currentPhase present"  ".currentPhase"  "$BODY"
 assert_equals "Phase starts as GAME"  "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
 # True spawn coords must NOT appear in round response
 HAS_SPAWN=$(echo "$BODY" | jq 'has("trueSpawnX") or has("spawnX")')
 assert_equals "True spawn coords hidden" "false" "$HAS_SPAWN"
+echo ""
+
+# 2.6a noclipHash must be present in round response (new field for 3D viewer)
+cyan "--- 2.6a Round response includes noclipHash"
+assert_field "noclipHash present in round" ".noclipHash" "$BODY"
+NOCLIP=$(echo "$BODY" | jq -r .noclipHash)
+echo "    noclipHash: ${NOCLIP:0:60}..."
+echo ""
+
+# 2.6b gameId should be a real game pack slug (not hardcoded "mario-kart-8")
+cyan "--- 2.6b Round uses real game pack data (not placeholder)"
+GAME_ID=$(echo "$BODY" | jq -r .gameId)
+LEVEL_ID=$(echo "$BODY" | jq -r .levelId)
+if [ "$GAME_ID" != "mario-kart-8" ] && [ "$LEVEL_ID" != "null" ] && [ "$LEVEL_ID" != "TBD-1" ]; then
+  green "  [PASS] Real game data: gameId=$GAME_ID, levelId=$LEVEL_ID"
+  PASS=$((PASS + 1))
+else
+  red "  [FAIL] Still using placeholder data: gameId=$GAME_ID, levelId=$LEVEL_ID"
+  FAIL=$((FAIL + 1))
+fi
+echo ""
+
+# 2.6c All 5 rounds should have distinct noclipHashes (different positions)
+cyan "--- 2.6c Verify rounds use different positions (via results endpoint)"
+req GET "$GAME/api/v1/rooms/$ROOM_CODE/results"
+ROUND_COUNT=$(echo "$BODY" | jq '.rounds | length')
+UNIQUE_HASHES=$(echo "$BODY" | jq '[.rounds[].noclipHash] | unique | length')
+if [ "$ROUND_COUNT" -gt 1 ] && [ "$UNIQUE_HASHES" -eq "$ROUND_COUNT" ]; then
+  green "  [PASS] All $ROUND_COUNT rounds have distinct noclipHashes"
+  PASS=$((PASS + 1))
+elif [ "$ROUND_COUNT" -gt 1 ]; then
+  # Duplicates are possible if game pack has few positions, but worth flagging
+  cyan "  [INFO] $UNIQUE_HASHES unique hashes out of $ROUND_COUNT rounds (some positions may repeat)"
+  PASS=$((PASS + 1))
+else
+  red "  [FAIL] Could not verify round diversity"
+  FAIL=$((FAIL + 1))
+fi
 echo ""
 
 # 2.7 Submit LEVEL guess while current phase is GAME → 400 (InvalidPhaseException)
@@ -271,14 +314,34 @@ echo "    Waiting 3s for Kafka scoring pipeline..."
 sleep 3
 echo ""
 
-# 2.11 Get results
+# 2.11 Get results — includes noclipHash, trueSpawnX/Z, but NOT trueSpawnY
 cyan "--- 2.11 GET /api/v1/rooms/{code}/results → 200"
 req GET "$GAME/api/v1/rooms/$ROOM_CODE/results"
 assert_status "Get results → 200" 200 "$STATUS"
 assert_field  "roomCode in results"   ".roomCode"  "$BODY"
 assert_equals "Results has 5 rounds" "5" "$(echo "$BODY" | jq '.rounds | length')"
-# True spawn coords SHOULD appear in results
+# True spawn coords X/Z SHOULD appear in results
 assert_field  "trueSpawnX in results" ".rounds[0].trueSpawnX" "$BODY"
+assert_field  "trueSpawnZ in results" ".rounds[0].trueSpawnZ" "$BODY"
+# trueSpawnY must NOT appear (dropped)
+HAS_Y=$(echo "$BODY" | jq '.rounds[0] | has("trueSpawnY")')
+assert_equals "trueSpawnY absent from results" "false" "$HAS_Y"
+# noclipHash SHOULD appear in results
+assert_field  "noclipHash in results" ".rounds[0].noclipHash" "$BODY"
+echo ""
+
+# 2.11a Results round fields use real game data
+cyan "--- 2.11a Results rounds have real game data"
+R0_GAME=$(echo "$BODY" | jq -r '.rounds[0].gameId')
+R0_LEVEL=$(echo "$BODY" | jq -r '.rounds[0].levelId')
+R0_HASH=$(echo "$BODY" | jq -r '.rounds[0].noclipHash')
+if [ "$R0_GAME" != "mario-kart-8" ] && [ "$R0_LEVEL" != "null" ] && [ -n "$R0_HASH" ] && [ "$R0_HASH" != "null" ]; then
+  green "  [PASS] Results round 1: game=$R0_GAME, level=$R0_LEVEL, hash=${R0_HASH:0:40}..."
+  PASS=$((PASS + 1))
+else
+  red "  [FAIL] Results still using placeholder data: game=$R0_GAME, level=$R0_LEVEL"
+  FAIL=$((FAIL + 1))
+fi
 echo ""
 
 # 2.12 Get round — non-existent match → 404

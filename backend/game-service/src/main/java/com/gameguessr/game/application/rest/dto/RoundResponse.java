@@ -26,6 +26,9 @@ public class RoundResponse {
             "SPOT" })
     private String currentPhase;
 
+    @Schema(description = "Noclip hash for the 3D viewer")
+    private String noclipHash;
+
     @Schema(description = "Whether this round has been completed")
     private boolean finished;
 

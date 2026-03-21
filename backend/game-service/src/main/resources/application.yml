@@ -20,7 +20,8 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.gameguessr.game.infrastructure.messaging.event"
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: "com.gameguessr.game.infrastructure.messaging.event.RoomCreatedEvent"
 
 # ── Server ───────────────────────────────────────────────────────────────
 server:

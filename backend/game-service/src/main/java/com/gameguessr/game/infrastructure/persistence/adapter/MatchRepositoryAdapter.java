@@ -15,9 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Driven adapter — implements the domain MatchRepository port using JPA.
- */
 @Component
 @RequiredArgsConstructor
 public class MatchRepositoryAdapter implements MatchRepository {
@@ -41,13 +38,12 @@ public class MatchRepositoryAdapter implements MatchRepository {
         return jpaRepository.existsByRoomCode(roomCode);
     }
 
-    // ── Mapping ──────────────────────────────────────────────────────
-
     private MatchEntity toEntity(Match match) {
         MatchEntity entity = MatchEntity.builder()
                 .id(match.getId())
                 .roomCode(match.getRoomCode())
                 .hostId(match.getHostId())
+                .gamePack(match.getGamePack())
                 .status(match.getStatus().name())
                 .currentRoundIndex(match.getCurrentRoundIndex())
                 .build();
@@ -67,8 +63,8 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .roundNumber(round.getRoundNumber())
                 .gameId(round.getGamePackEntry().getGameId())
                 .levelId(round.getGamePackEntry().getLevelId())
+                .noclipHash(round.getGamePackEntry().getNoclipHash())
                 .spawnX(round.getGamePackEntry().getSpawnX())
-                .spawnY(round.getGamePackEntry().getSpawnY())
                 .spawnZ(round.getGamePackEntry().getSpawnZ())
                 .currentPhase(round.getCurrentPhase().name())
                 .finished(round.isFinished())
@@ -85,6 +81,7 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .id(entity.getId())
                 .roomCode(entity.getRoomCode())
                 .hostId(entity.getHostId())
+                .gamePack(entity.getGamePack())
                 .status(MatchStatus.valueOf(entity.getStatus()))
                 .currentRoundIndex(entity.getCurrentRoundIndex())
                 .rounds(rounds)
@@ -98,8 +95,8 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .gamePackEntry(GamePackEntry.builder()
                         .gameId(entity.getGameId())
                         .levelId(entity.getLevelId())
+                        .noclipHash(entity.getNoclipHash())
                         .spawnX(entity.getSpawnX())
-                        .spawnY(entity.getSpawnY())
                         .spawnZ(entity.getSpawnZ())
                         .build())
                 .currentPhase(GuessPhase.valueOf(entity.getCurrentPhase()))

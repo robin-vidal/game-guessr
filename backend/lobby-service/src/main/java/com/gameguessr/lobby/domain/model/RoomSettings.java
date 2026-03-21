@@ -20,5 +20,5 @@ public class RoomSettings {
 
     /** Selected game pack identifier (default: mario-kart). */
     @Builder.Default
-    private final String gamePack = "mario-kart";
+    private final String gamePack = "mario-kart-wii";
 }

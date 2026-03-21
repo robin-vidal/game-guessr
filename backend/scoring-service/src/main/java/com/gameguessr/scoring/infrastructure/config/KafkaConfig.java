@@ -44,7 +44,7 @@ public class KafkaConfig {
     @Bean
     public NewTopic scoreCalculatedTopic() {
         return TopicBuilder.name(scoreCalculatedTopic)
-                .partitions(3)
+                .partitions(1)
                 .replicas(1)
                 .build();
     }
