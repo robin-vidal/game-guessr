@@ -1,0 +1,74 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Action composite : build multi-platform + push GHCR avec stratégie de tagging.
+# Factorise les étapes communes à tous les jobs de build de build-push.yml.
+#
+# Stratégie de tagging (selon le contexte appelant) :
+#   push main    → :sha-<7chars>  +  :latest
+#   push develop → :sha-<7chars>-dev  +  :develop
+#   pull_request → :pr-<number>  (build uniquement, AUCUN push)
+# ──────────────────────────────────────────────────────────────────────────────
+name: Docker Build & Push
+description: >
+  Build une image Docker multi-plateforme (amd64 + arm64) et la pousse sur GHCR
+  avec la stratégie de tagging standard du projet.
+
+inputs:
+  service-name:
+    required: true
+    description: Nom du service — utilisé comme nom d'image dans GHCR
+  context:
+    required: true
+    description: Chemin du contexte Docker, relatif à la racine du repo (ex. backend/game-service)
+  registry-token:
+    required: true
+    description: GITHUB_TOKEN pour l'authentification GHCR
+
+runs:
+  using: composite
+  steps:
+    - name: Set lowercase repository name
+      # ghcr.io requiert que le nom de l'owner/repo soit en minuscules
+      shell: bash
+      run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+    - name: Set up QEMU
+      # Émulateur requis pour cross-compiler linux/arm64 sur un runner amd64
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.registry-token }}
+
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ env.REPO_LC }}/${{ inputs.service-name }}
+        tags: |
+          # PR → :pr-<number>  (build de validation, aucun push vers le registry)
+          type=ref,event=pr,prefix=pr-
+          # develop → :sha-<7chars>-dev  +  :develop
+          type=sha,enable=${{ github.ref == 'refs/heads/develop' }},suffix=-dev
+          type=raw,value=develop,enable=${{ github.ref == 'refs/heads/develop' }}
+          # main → :sha-<7chars>  +  :latest
+          type=sha,enable=${{ github.ref == 'refs/heads/main' }}
+          type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        context: ./${{ inputs.context }}
+        platforms: linux/amd64
+        # Sur PR : pas de push — build uniquement pour valider le Dockerfile
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        # Cache GHA partagé entre tous les jobs — accélère les builds successifs
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

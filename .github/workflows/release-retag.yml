@@ -1,0 +1,78 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Release par retag : déclenché sur push d'un tag vX.Y.Z.
+#
+# NE REBUILD PAS — pull l'image :sha-<7chars> existante (produite par
+# build-push.yml lors du merge sur main), la retague et la pousse.
+#
+# Tags produits pour chaque service :
+#   :v1.2.3  (version exacte)
+#   :v1.2    (majeur.mineur — facilite les updates "patch-transparent")
+#   :latest  (pointe toujours sur la dernière release stable)
+#
+# Prérequis : le commit tagué DOIT avoir passé build-push.yml sur main
+#   → l'image :sha-<7chars> doit exister dans GHCR.
+#   Si le tag pointe un commit de develop (image :sha-<7chars>-dev),
+#   le docker pull échouera. Tagger uniquement depuis main.
+#
+# fail-fast: false → si un service échoue (image absente), les autres continuent.
+# ──────────────────────────────────────────────────────────────────────────────
+name: Release – Retag Images
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'   # ex. v1.2.3 — inclut les pre-releases type v1.0.0-rc.1
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false   # Un service en échec ne bloque pas les autres
+      matrix:
+        service:
+          - game-service
+          - leaderboard-service
+          - lobby-service
+          - scoring-service
+          - frontend
+
+    steps:
+      - name: Log in to GHCR
+        # Pas de checkout nécessaire : on ne fait que docker pull/tag/push
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retag and push
+        run: |
+          REPO_LC="${GITHUB_REPOSITORY,,}"
+
+          # SHA court (7 chars) du commit pointé par ce tag
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+
+          # Tag complet depuis la ref : refs/tags/v1.2.3 → v1.2.3
+          VERSION="${GITHUB_REF#refs/tags/}"
+
+          # Tag majeur+mineur : v1.2.3 → v1.2
+          MAJOR_MINOR="${VERSION%.*}"
+
+          IMAGE="${{ env.REGISTRY }}/${REPO_LC}/${{ matrix.service }}"
+          SOURCE="${IMAGE}:sha-${SHORT_SHA}"
+
+          echo "Source : ${SOURCE}"
+          docker pull "${SOURCE}"
+
+          for TAG in "${VERSION}" "${MAJOR_MINOR}" "latest"; do
+            docker tag  "${SOURCE}" "${IMAGE}:${TAG}"
+            docker push "${IMAGE}:${TAG}"
+            echo "→ Pushed ${IMAGE}:${TAG}"
+          done
