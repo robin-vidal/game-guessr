@@ -1,6 +1,6 @@
-import { useEffect, useRef, useMemo, ReactNode } from "react";
-import * as THREE from "three";
-import { Planet } from "./Planet";
+import { useEffect, useRef, useMemo, ReactNode } from 'react';
+import { Planet } from './Planet';
+import { Camera, Color, Mesh, PlaneGeometry, Scene, ShaderMaterial, WebGLRenderer } from 'three';
 
 interface Star {
   id: number;
@@ -24,9 +24,7 @@ function generateStars(count: number): Star[] {
   }));
 }
 
-export function GalaxyBackground({
-  children,
-}: Readonly<{ children?: ReactNode }>) {
+export function GalaxyBackground({ children }: Readonly<{ children?: ReactNode }>) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stars = useMemo(() => generateStars(250), []);
 
@@ -36,15 +34,15 @@ export function GalaxyBackground({
 
     let alive = true;
 
-    const renderer = new THREE.WebGLRenderer({ canvas });
+    const renderer = new WebGLRenderer({ canvas });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const material = new THREE.ShaderMaterial({
+    const geometry = new PlaneGeometry(2, 2);
+    const material = new ShaderMaterial({
       uniforms: {
-        topColor: { value: new THREE.Color(0x0a0015) },
-        midColor: { value: new THREE.Color(0x0d1a6e) },
-        bottomColor: { value: new THREE.Color(0x1a0a4a) },
+        topColor: { value: new Color(0x0a0015) },
+        midColor: { value: new Color(0x0d1a6e) },
+        bottomColor: { value: new Color(0x1a0a4a) },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -67,13 +65,12 @@ export function GalaxyBackground({
       depthWrite: false,
     });
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.Camera();
-    scene.add(new THREE.Mesh(geometry, material));
+    const scene = new Scene();
+    const camera = new Camera();
+    scene.add(new Mesh(geometry, material));
 
-    const onResize = () =>
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    window.addEventListener("resize", onResize);
+    const onResize = () => renderer.setSize(window.innerWidth, window.innerHeight);
+    window.addEventListener('resize', onResize);
 
     const animate = () => {
       if (!alive) return;
@@ -84,7 +81,7 @@ export function GalaxyBackground({
 
     return () => {
       alive = false;
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener('resize', onResize);
       renderer.dispose();
     };
   }, []);
@@ -93,25 +90,25 @@ export function GalaxyBackground({
     <>
       <div
         style={{
-          position: "fixed",
+          position: 'fixed',
           inset: 0,
           zIndex: 0,
-          backgroundColor: "#0a0015",
+          backgroundColor: '#0a0015',
         }}
       >
         {/* Gradient sky */}
         <canvas
           ref={canvasRef}
           style={{
-            position: "absolute",
+            position: 'absolute',
             inset: 0,
-            width: "100%",
-            height: "100%",
+            width: '100%',
+            height: '100%',
           }}
         />
 
         {/* Stars */}
-        <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <style>{`
           @keyframes twinkle {
             0%, 100% { opacity: var(--star-opacity); transform: scale(1); }
@@ -123,14 +120,14 @@ export function GalaxyBackground({
               key={star.id}
               style={
                 {
-                  position: "absolute",
+                  position: 'absolute',
                   left: `${star.x}%`,
                   top: `${star.y}%`,
                   width: `${star.size}px`,
                   height: `${star.size}px`,
-                  borderRadius: "50%",
-                  backgroundColor: "#ffffff",
-                  "--star-opacity": star.opacity,
+                  borderRadius: '50%',
+                  backgroundColor: '#ffffff',
+                  '--star-opacity': star.opacity,
                   opacity: star.opacity,
                   boxShadow: `0 0 ${star.size * 2}px rgba(255,255,255,${star.opacity * 0.6})`,
                   animation: `twinkle ${star.duration}s ${star.delay}s ease-in-out infinite`,
@@ -142,7 +139,7 @@ export function GalaxyBackground({
         <Planet />
       </div>
       <main
-        style={{ position: "relative", zIndex: 1 }}
+        style={{ position: 'relative', zIndex: 1 }}
         className="flex min-h-screen flex-col items-center justify-center gap-8 p-8 select-none"
       >
         {children}

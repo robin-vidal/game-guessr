@@ -5,19 +5,29 @@ import { GalaxyBackground } from '@/components/background/GalaxyBackground';
 import InfoBar from '@/components/ui/InfoBar';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 export function HomePage() {
   const navigate = useNavigate();
   const createPrivate = useCreatePrivateRoom();
+  const [pseudo, setPseudo] = useState<string>('');
 
   const handleCreatePrivate = async () => {
+    if (pseudo == '') {
+      toast('Ben alors tu donnes pas de nom?', { position: 'top-left' });
+      return;
+    }
+    if (Math.floor(Math.random() * 3) == 1) {
+      toast('Pseudo pas assez cool, réessaye', { position: 'top-left' });
+      return;
+    }
     try {
       const room = (await createPrivate.mutateAsync({})) ?? 1;
 
       navigate(`/room/${room.id}`);
     } catch (e) {
       console.log({ e });
-      toast('Could not create room', { position: 'top-left' });
+      toast('Échec de création de la salle', { position: 'top-left' });
     }
   };
 
@@ -47,7 +57,14 @@ export function HomePage() {
       <InfoBar
         title="Lancer une partie"
         subtitle="Rentre un pseudo pour jouer"
-        content={<Input id="input-demo-api-key" placeholder="CoolName" />}
+        content={
+          <Input
+            value={pseudo}
+            onChange={(e) => setPseudo(e.target.value ?? '')}
+            id="input-demo-api-key"
+            placeholder="CoolName"
+          />
+        }
         actions={
           <Button
             size="lg"
