@@ -1,0 +1,88 @@
+name: Build & Push
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  detect:
+    uses: ./.github/workflows/changes-detection.yml
+    permissions:
+      contents: read
+      pull-requests: read
+
+  build-game-service:
+    needs: detect
+    if: needs.detect.outputs.game-service == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/docker-build-push
+        with:
+          service-name: game-service
+          context: backend/game-service
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-leaderboard-service:
+    needs: detect
+    if: needs.detect.outputs.leaderboard-service == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/docker-build-push
+        with:
+          service-name: leaderboard-service
+          context: backend/leaderboard-service
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-lobby-service:
+    needs: detect
+    if: needs.detect.outputs.lobby-service == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/docker-build-push
+        with:
+          service-name: lobby-service
+          context: backend/lobby-service
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-scoring-service:
+    needs: detect
+    if: needs.detect.outputs.scoring-service == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/docker-build-push
+        with:
+          service-name: scoring-service
+          context: backend/scoring-service
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-frontend:
+    needs: detect
+    if: needs.detect.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/docker-build-push
+        with:
+          service-name: frontend
+          context: frontend
+          registry-token: ${{ secrets.GITHUB_TOKEN }}

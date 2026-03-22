@@ -1,0 +1,63 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Workflow réutilisable : détecte quels services ont des fichiers modifiés.
+# Appelé exclusivement via `uses: ./.github/workflows/changes-detection.yml`
+# depuis d'autres workflows (build-push.yml). Non déclenché directement.
+#
+# Outputs : un booléen par service — 'true' si des fichiers ont changé.
+# ──────────────────────────────────────────────────────────────────────────────
+name: Detect Changes
+
+on:
+  workflow_call:
+    outputs:
+      game-service:
+        description: "'true' si backend/game-service/** a des modifications"
+        value: ${{ jobs.detect.outputs.game-service }}
+      leaderboard-service:
+        description: "'true' si backend/leaderboard-service/** a des modifications"
+        value: ${{ jobs.detect.outputs.leaderboard-service }}
+      lobby-service:
+        description: "'true' si backend/lobby-service/** a des modifications"
+        value: ${{ jobs.detect.outputs.lobby-service }}
+      scoring-service:
+        description: "'true' si backend/scoring-service/** a des modifications"
+        value: ${{ jobs.detect.outputs.scoring-service }}
+      frontend:
+        description: "'true' si frontend/** a des modifications"
+        value: ${{ jobs.detect.outputs.frontend }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read  # Requis par dorny/paths-filter pour lire le diff d'une PR via l'API GitHub
+    outputs:
+      game-service:        ${{ steps.filter.outputs.game-service }}
+      leaderboard-service: ${{ steps.filter.outputs.leaderboard-service }}
+      lobby-service:       ${{ steps.filter.outputs.lobby-service }}
+      scoring-service:     ${{ steps.filter.outputs.scoring-service }}
+      frontend:            ${{ steps.filter.outputs.frontend }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          # Chaque clé devient un output booléen : steps.filter.outputs.<clé>
+          # Sur push  : compare avec le commit précédent
+          # Sur PR    : compare avec la branche base (comportement par défaut)
+          filters: |
+            game-service:
+              - 'backend/game-service/**'
+            leaderboard-service:
+              - 'backend/leaderboard-service/**'
+            lobby-service:
+              - 'backend/lobby-service/**'
+            scoring-service:
+              - 'backend/scoring-service/**'
+            frontend:
+              - 'frontend/**'
