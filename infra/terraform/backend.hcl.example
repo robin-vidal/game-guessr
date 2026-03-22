@@ -1,0 +1,6 @@
+# Copy to backend.hcl (gitignored) and fill in your values.
+# The GCS bucket must exist before running `make up`.
+# Create it with: gsutil mb -l europe-west1 gs://YOUR_BUCKET_NAME
+
+bucket = "your-tfstate-bucket-name"
+prefix = "your-prefix"
