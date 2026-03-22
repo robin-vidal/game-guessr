@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.mockito.ArgumentCaptor;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -184,6 +186,7 @@ class GameApplicationServiceTest {
     void submitGuess_gamePhase_publishesEvent() {
         Match inProgress = buildInProgressMatch();
         when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Guess guess = Guess.builder()
                 .playerId("player-1")
@@ -195,6 +198,114 @@ class GameApplicationServiceTest {
         service.submitGuess(ROOM_CODE, guess);
 
         verify(gameEventPublisher).publishGuessSubmitted(eq(ROOM_CODE), eq(1), eq(guess));
+    }
+
+    @Test
+    @DisplayName("submitGuess — GAME guess advances phase to LEVEL")
+    void submitGuess_gameGuess_advancesToLevel() {
+        Match inProgress = buildInProgressMatch();
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.GAME)
+                .textAnswer("Mario Kart Wii")
+                .submittedAt(Instant.now())
+                .build();
+
+        service.submitGuess(ROOM_CODE, guess);
+
+        var savedMatch = captureAndReturnSavedMatch();
+        assertThat(savedMatch.currentRound().getCurrentPhase()).isEqualTo(GuessPhase.LEVEL);
+        assertThat(savedMatch.currentRound().isFinished()).isFalse();
+    }
+
+    @Test
+    @DisplayName("submitGuess — LEVEL guess advances phase to SPOT")
+    void submitGuess_levelGuess_advancesToSpot() {
+        Match inProgress = buildInProgressMatchAtPhase(GuessPhase.LEVEL);
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.LEVEL)
+                .textAnswer("Luigi Circuit")
+                .submittedAt(Instant.now())
+                .build();
+
+        service.submitGuess(ROOM_CODE, guess);
+
+        var savedMatch = captureAndReturnSavedMatch();
+        assertThat(savedMatch.currentRound().getCurrentPhase()).isEqualTo(GuessPhase.SPOT);
+        assertThat(savedMatch.currentRound().isFinished()).isFalse();
+    }
+
+    @Test
+    @DisplayName("submitGuess — SPOT guess marks round finished and advances to next round")
+    void submitGuess_spotGuess_finishesRoundAndAdvances() {
+        Match inProgress = buildMultiRoundMatchAtPhase(GuessPhase.SPOT, 0);
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.SPOT)
+                .guessX(100.0)
+                .guessY(50.0)
+                .guessZ(-200.0)
+                .submittedAt(Instant.now())
+                .build();
+
+        service.submitGuess(ROOM_CODE, guess);
+
+        var savedMatch = captureAndReturnSavedMatch();
+        assertThat(savedMatch.getCurrentRoundIndex()).isEqualTo(1);
+        assertThat(savedMatch.getRounds().get(0).isFinished()).isTrue();
+        assertThat(savedMatch.isInProgress()).isTrue();
+    }
+
+    @Test
+    @DisplayName("submitGuess — SPOT guess on last round sets match to FINISHED")
+    void submitGuess_spotOnLastRound_finishesMatch() {
+        Match inProgress = buildMultiRoundMatchAtPhase(GuessPhase.SPOT, 1);
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.SPOT)
+                .guessX(100.0)
+                .guessY(50.0)
+                .guessZ(-200.0)
+                .submittedAt(Instant.now())
+                .build();
+
+        service.submitGuess(ROOM_CODE, guess);
+
+        var savedMatch = captureAndReturnSavedMatch();
+        assertThat(savedMatch.isFinished()).isTrue();
+        assertThat(savedMatch.getStatus()).isEqualTo(MatchStatus.FINISHED);
+    }
+
+    @Test
+    @DisplayName("submitGuess — publishes RoundUpdateEvent after progression")
+    void submitGuess_publishesRoundUpdate() {
+        Match inProgress = buildInProgressMatch();
+        when(matchRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(inProgress));
+        when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Guess guess = Guess.builder()
+                .playerId("player-1")
+                .phase(GuessPhase.GAME)
+                .textAnswer("Mario Kart Wii")
+                .submittedAt(Instant.now())
+                .build();
+
+        service.submitGuess(ROOM_CODE, guess);
+
+        verify(gameEventPublisher).publishRoundUpdate(eq(ROOM_CODE), any(Round.class));
     }
 
     @Test
@@ -274,6 +385,69 @@ class GameApplicationServiceTest {
     }
 
     // ── helpers ──────────────────────────────────────────────────────
+
+    private Match captureAndReturnSavedMatch() {
+        ArgumentCaptor<Match> captor = ArgumentCaptor.forClass(Match.class);
+        verify(matchRepository).save(captor.capture());
+        return captor.getValue();
+    }
+
+    private Match buildInProgressMatchAtPhase(GuessPhase phase) {
+        Round round = Round.builder()
+                .id(UUID.randomUUID())
+                .roundNumber(1)
+                .gamePackEntry(GamePackEntry.builder()
+                        .gameId(GAME_PACK_SLUG)
+                        .levelId("Luigi Circuit")
+                        .noclipHash("mkwii/beginner_course;ShareData=test")
+                        .spawnX(0.0)
+                        .spawnZ(0.0)
+                        .build())
+                .currentPhase(phase)
+                .finished(false)
+                .startedAt(Instant.now().toEpochMilli())
+                .build();
+
+        return Match.builder()
+                .id(UUID.randomUUID())
+                .roomCode(ROOM_CODE)
+                .hostId(HOST_ID)
+                .gamePack(GAME_PACK_SLUG)
+                .status(MatchStatus.IN_PROGRESS)
+                .rounds(List.of(round))
+                .currentRoundIndex(0)
+                .build();
+    }
+
+    private Match buildMultiRoundMatchAtPhase(GuessPhase phase, int currentRoundIndex) {
+        List<Round> rounds = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            rounds.add(Round.builder()
+                    .id(UUID.randomUUID())
+                    .roundNumber(i + 1)
+                    .gamePackEntry(GamePackEntry.builder()
+                            .gameId(GAME_PACK_SLUG)
+                            .levelId("Level " + (i + 1))
+                            .noclipHash("hash-" + (i + 1))
+                            .spawnX(i * 10.0)
+                            .spawnZ(i * 20.0)
+                            .build())
+                    .currentPhase(i == currentRoundIndex ? phase : GuessPhase.GAME)
+                    .finished(i < currentRoundIndex)
+                    .startedAt(Instant.now().toEpochMilli())
+                    .build());
+        }
+
+        return Match.builder()
+                .id(UUID.randomUUID())
+                .roomCode(ROOM_CODE)
+                .hostId(HOST_ID)
+                .gamePack(GAME_PACK_SLUG)
+                .status(MatchStatus.IN_PROGRESS)
+                .rounds(rounds)
+                .currentRoundIndex(currentRoundIndex)
+                .build();
+    }
 
     private Match buildInProgressMatch() {
         Round round = Round.builder()
