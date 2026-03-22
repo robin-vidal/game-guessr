@@ -84,6 +84,21 @@ public class GameApplicationService implements GameUseCase {
                 guess.getPlayerId(), guess.getPhase(), roomCode, currentRound.getRoundNumber());
 
         gameEventPublisher.publishGuessSubmitted(roomCode, currentRound.getRoundNumber(), guess);
+
+        // ── Phase & round progression ────────────────────────────────────
+        Round updatedRound = advancePhase(currentRound, guess.getPhase());
+        match = replaceCurrentRound(match, updatedRound);
+
+        if (updatedRound.isFinished()) {
+            if (match.getCurrentRoundIndex() < match.getRounds().size() - 1) {
+                match = match.withCurrentRoundIndex(match.getCurrentRoundIndex() + 1);
+            } else {
+                match = match.withStatus(MatchStatus.FINISHED);
+            }
+        }
+
+        matchRepository.save(match);
+        gameEventPublisher.publishRoundUpdate(roomCode, match.currentRound());
     }
 
     @Override
@@ -137,6 +152,20 @@ public class GameApplicationService implements GameUseCase {
         }
 
         return rounds;
+    }
+
+    private Round advancePhase(Round round, GuessPhase guessPhase) {
+        return switch (guessPhase) {
+            case GAME -> round.withCurrentPhase(GuessPhase.LEVEL);
+            case LEVEL -> round.withCurrentPhase(GuessPhase.SPOT);
+            case SPOT -> round.withFinished(true);
+        };
+    }
+
+    private Match replaceCurrentRound(Match match, Round updatedRound) {
+        List<Round> updatedRounds = new ArrayList<>(match.getRounds());
+        updatedRounds.set(match.getCurrentRoundIndex(), updatedRound);
+        return match.withRounds(updatedRounds);
     }
 
     private void validatePhase(Round round, Guess guess) {
