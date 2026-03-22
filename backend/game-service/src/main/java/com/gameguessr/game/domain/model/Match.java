@@ -23,6 +23,9 @@ public class Match {
 
     private final String hostId;
 
+    /** IDs of all players in the match. */
+    private final List<String> playerIds;
+
     /** Game pack slug (e.g. "mario-kart-wii"). */
     private final String gamePack;
 

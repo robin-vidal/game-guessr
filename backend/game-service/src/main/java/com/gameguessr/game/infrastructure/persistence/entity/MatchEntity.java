@@ -35,6 +35,9 @@ public class MatchEntity {
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
+    @Column(name = "player_ids_csv", length = 1024)
+    private String playerIdsCsv;
+
     @Column(name = "current_round_index", nullable = false)
     private int currentRoundIndex;
 

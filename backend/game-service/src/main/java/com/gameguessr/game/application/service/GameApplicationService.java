@@ -1,5 +1,6 @@
 package com.gameguessr.game.application.service;
 
+import com.gameguessr.game.domain.exception.DuplicateGuessException;
 import com.gameguessr.game.domain.exception.InvalidPhaseException;
 import com.gameguessr.game.domain.exception.MatchAlreadyStartedException;
 import com.gameguessr.game.domain.exception.MatchNotFoundException;
@@ -23,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -40,7 +43,7 @@ public class GameApplicationService implements GameUseCase {
 
     @Override
     @Transactional
-    public Match startMatch(String roomCode, String hostId) {
+    public Match startMatch(String roomCode, String hostId, List<String> playerIds) {
         log.info("Starting match for room {}", roomCode);
 
         Match existing = matchRepository.findByRoomCode(roomCode)
@@ -53,6 +56,7 @@ public class GameApplicationService implements GameUseCase {
         List<Round> rounds = buildRoundsFromLevels();
 
         Match match = existing.withStatus(MatchStatus.IN_PROGRESS)
+                .withPlayerIds(playerIds)
                 .withRounds(rounds)
                 .withCurrentRoundIndex(0);
 
@@ -60,8 +64,8 @@ public class GameApplicationService implements GameUseCase {
 
         gameEventPublisher.publishRoundUpdate(roomCode, saved.currentRound());
 
-        log.info("Match {} started for room {} with {} rounds",
-                saved.getId(), roomCode, rounds.size());
+        log.info("Match {} started for room {} with {} rounds and {} players",
+                saved.getId(), roomCode, rounds.size(), playerIds.size());
         return saved;
     }
 
@@ -80,16 +84,33 @@ public class GameApplicationService implements GameUseCase {
 
         validatePhase(currentRound, guess);
 
+        // ── Duplicate guard ──────────────────────────────────────────────
+        if (currentRound.getPhaseGuessedPlayerIds().contains(guess.getPlayerId())) {
+            throw new DuplicateGuessException(
+                    "Player " + guess.getPlayerId() + " already guessed for phase " + guess.getPhase());
+        }
+
         log.info("Player {} submitted {} guess for room {} round {}",
                 guess.getPlayerId(), guess.getPhase(), roomCode, currentRound.getRoundNumber());
 
         gameEventPublisher.publishGuessSubmitted(roomCode, currentRound.getRoundNumber(), guess);
 
-        // ── Phase & round progression ────────────────────────────────────
-        Round updatedRound = advancePhase(currentRound, guess.getPhase());
+        // ── Record guess ─────────────────────────────────────────────────
+        Set<String> updatedGuessedIds = new HashSet<>(currentRound.getPhaseGuessedPlayerIds());
+        updatedGuessedIds.add(guess.getPlayerId());
+        Round updatedRound = currentRound.withPhaseGuessedPlayerIds(updatedGuessedIds);
+
+        // ── Phase & round progression (only when all players have guessed) ──
+        boolean allGuessed = updatedGuessedIds.size() >= match.getPlayerIds().size();
+
+        if (allGuessed) {
+            updatedRound = advancePhase(updatedRound, guess.getPhase());
+            updatedRound = updatedRound.withPhaseGuessedPlayerIds(new HashSet<>());
+        }
+
         match = replaceCurrentRound(match, updatedRound);
 
-        if (updatedRound.isFinished()) {
+        if (allGuessed && updatedRound.isFinished()) {
             if (match.getCurrentRoundIndex() < match.getRounds().size() - 1) {
                 match = match.withCurrentRoundIndex(match.getCurrentRoundIndex() + 1);
             } else {
@@ -171,13 +192,9 @@ public class GameApplicationService implements GameUseCase {
     private void validatePhase(Round round, Guess guess) {
         GuessPhase current = round.getCurrentPhase();
 
-        if (guess.getPhase() == GuessPhase.LEVEL && current == GuessPhase.GAME) {
+        if (guess.getPhase() != current) {
             throw new InvalidPhaseException(
-                    "Cannot submit LEVEL guess — GAME phase not yet completed.");
-        }
-        if (guess.getPhase() == GuessPhase.SPOT && current != GuessPhase.SPOT) {
-            throw new InvalidPhaseException(
-                    "Cannot submit SPOT guess — previous phases not yet completed.");
+                    "Cannot submit " + guess.getPhase() + " guess — current phase is " + current + ".");
         }
     }
 }

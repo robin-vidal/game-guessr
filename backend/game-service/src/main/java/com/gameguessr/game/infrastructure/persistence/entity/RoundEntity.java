@@ -50,4 +50,7 @@ public class RoundEntity {
 
     @Column(name = "started_at", nullable = false)
     private long startedAt;
+
+    @Column(name = "guessed_player_ids_csv", length = 1024)
+    private String guessedPlayerIdsCsv;
 }

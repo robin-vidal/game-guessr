@@ -1,5 +1,6 @@
 package com.gameguessr.game.application.rest;
 
+import com.gameguessr.game.domain.exception.DuplicateGuessException;
 import com.gameguessr.game.domain.exception.InvalidPhaseException;
 import com.gameguessr.game.domain.exception.MatchAlreadyStartedException;
 import com.gameguessr.game.domain.exception.MatchNotFoundException;
@@ -35,6 +36,15 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setType(URI.create("https://gameguessr.com/errors/match-already-started"));
         problem.setTitle("Match Already Started");
+        return problem;
+    }
+
+    @ExceptionHandler(DuplicateGuessException.class)
+    public ProblemDetail handleDuplicateGuess(DuplicateGuessException ex) {
+        log.warn("Duplicate guess: {}", ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setType(URI.create("https://gameguessr.com/errors/duplicate-guess"));
+        problem.setTitle("Duplicate Guess");
         return problem;
     }
 

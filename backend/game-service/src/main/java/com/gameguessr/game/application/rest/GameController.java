@@ -41,7 +41,7 @@ public class GameController {
             @Parameter(description = "Room code", example = "ABC123") @PathVariable String code,
             @Valid @RequestBody StartMatchRequest request) {
 
-        gameUseCase.startMatch(code, request.getHostId());
+        gameUseCase.startMatch(code, request.getHostId(), request.getPlayerIds());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
