@@ -1,408 +1,774 @@
 [
-    {
-        "game": "Mario Kart Wii",
-        "positions": [
-            {
-                "level": "Circuit Luigi",
-                "hash": "mkwii/beginner_course;ShareData=AEXBuUZx3-ULQlkUl~~=V:-*T5${@JUXsX,9d!lrV?drQ9z{9AUEyr}UsVfAV[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Circuit Luigi",
-                "hash": "mkwii/beginner_course;ShareData=AVp3F8=i499Un[yUZ*R,=F2E^RHffNUmjHXUJgLgV^;JU9v,w@Tj23D8]M=LWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Prairie Meuh Meuh",
-                "hash": "mkwii/farm_course;ShareData=AT5F?UvGaX8$9jlUutO]V71e{Q_0XLUe;!BT3kb;V*S*K9r~Ma8/~0$Uqp~l+C",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Prairie Meuh Meuh",
-                "hash": "mkwii/farm_course;ShareData=AIb*,Ue;SkT?vp4Ug73fV5YmlQ61,DUd=6t9RSobV$XMw9o;E:T3e-+Uh7Dv=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Gorge Champignon",
-                "hash": "mkwii/kinoko_course;ShareData=Aa8cpT(!zfT-Oy@UfC7g+7Wwa6TqcoUp$Wo8[4G3V&a;59j}vnTq~x8USQLEV[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Gorge Champignon",
-                "hash": "mkwii/kinoko_course;ShareData=AJ;AxULaM*9G$joUXGz,VYbC&T?)GJUboM@UC=$KWK3sd9xJf}T[lLAUG[GcWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Usine Toad",
-                "hash": "mkwii/factory_course;ShareData=AL@OvUkkii8TVh58|rL[V]*(=RS^lXUjEGG8;o,hV5PP}T1u|hT7nVUUc&H{V[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Usine Toad",
-                "hash": "mkwii/factory_course;ShareData=AH&u?UpTeKT@S|G9sFSK=cZ}-Qys0VUXm+JT6U7yWB/3-Uf*W(8uZx;UV1AOWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Usine Toad",
-                "hash": "mkwii/factory_course;ShareData=AL~{K9m9L38lC=dT{v6cV@R]P5no8lUgYJ~UMjoXV*MtG9e93_UN36b9wymb=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Circuit Mario",
-                "hash": "mkwii/castle_course;ShareData=AOuN99br}y9Ldl(9v|N6=M,=9Q&IiQUdUMc9L3_oV_H[:UvjBV8-40?9NMyQWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Circuit Mario",
-                "hash": "mkwii/castle_course;ShareData=ADw;TUjB?KUJ{=oUlokqWRrPP6D7/5UeZ[m9S~6BV-V*?9tB+-T(3c3Us3(;V[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Supermarché Coco",
-                "hash": "mkwii/shopping_course;ShareData=ACmG?9YGDVT2;b394UMX=XU~j5&64@UrVr_T_]WlWJ2+&Uog[ZTrC=/9Ut+!=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Supermarché Coco",
-                "hash": "mkwii/shopping_course;ShareData=ALa2U9V*_uT)E[[9vSxt=Te&y6FI!QUvF;:UA=v@V9y}FUlMzXT:eJh9S&]h=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Pic DK",
-                "hash": "mkwii/boardcross_course;ShareData=AE+j99n^JpTu0FHUTi=tWT/&HQepH1UcJ;(85;}$V~dVp9Uv:n86Yy+94$[EVt",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Pic DK",
-                "hash": "mkwii/boardcross_course;ShareData=AA=}gUh~1vT;8cy9cuOVWZEC/6NztOUZ@1AUNXS!WgG*4T*@A@8]G=MUmSv7WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mine Wario",
-                "hash": "mkwii/truck_course;ShareData=AU$qLUYZ8+T6!z=9Lw(m=lmiaQ=wobUfY_SUPAn,V]M5KT^KBE9MfA1UZ-c8WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mine Wario",
-                "hash": "mkwii/truck_course;ShareData=AM|&nUYu0)8};0~UeESmV*vje5+b4RUu[ChUUm_gWA_-m9x*Xc9N~4hUf*bWWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Circuit Daisy",
-                "hash": "mkwii/senior_course;ShareData=ATS|$94[G5T-o-NUIpr|V)kP15/4pwUe~h39J,y)Vyg;X9P$Sl9QEW,9w|~WWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Circuit Daisy",
-                "hash": "mkwii/senior_course;ShareData=AHf{Z931@a8:Qa=9U}1G=Q!2258M_?UpD@Q9NxW0V=K@|UPCg79HWXs9w{?d+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Cap Koopa",
-                "hash": "mkwii/water_course;ShareData=ANDf_9t~ik8(H@^UtI0V=EM3d6G1VQUlJ?$T1TXfWmFvN9i0}:T;0K_9kRlN=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Cap Koopa",
-                "hash": "mkwii/water_course;ShareData=AAoFdUIAIi9QQO79w84yV8GDx5,:~mUgF}:9MPl(V)x|*UuL0hT4cHiT^X?cV[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Cap Koopa",
-                "hash": "mkwii/water_course;ShareData=APJSv9tjR-UHo,pUfM$)VU1;:5@{/_Usn6g9L3qHV{!!59qI3Y9W8Af92icwWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Bois Vermeil",
-                "hash": "mkwii/treehouse_course;ShareData=ACQ1vUYvLV9Vzk;9yEZ0=O+U1Qtl3+Ug5:h9VuI,V7(1cUc8VlUAkoMUZ:9T=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Bois Vermeil",
-                "hash": "mkwii/treehouse_course;ShareData=AJLb?9u~~WUBVd?Uln-VWLQ7ARXVRdUi,)A9Qb,VV{i$J91q[;8}9=e92kIxWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Bois Vermeil",
-                "hash": "mkwii/treehouse_course;ShareData=ARIZ?UXP5sUMCv:94z4/=wwz!8v=9qUwZLsT)49[WTf;EUhGWv9Wi!OUs6(;WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Volcan Grondant",
-                "hash": "mkwii/volcano_course;ShareData=AG-ExUeW4ST4gI&Ub9,wWFK$*5+G)fUsY_a8/KlvV4+v@9pcViT4cGdUrl~+Wq",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Volcan Grondant",
-                "hash": "mkwii/volcano_course;ShareData=AG{Vf9LIY7UNvwm9pdHp=r_?+Q[x@/Ui${/T{2,iWE8k2Um;xyT])$f9GvIG+5",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Ruines Sec Sec",
-                "hash": "mkwii/desert_course;ShareData=AOmVaUcN|:TZgbo9FRd&=agVYQ0==|Uio8_UHLOvV(,5xT!LxY9GB6:UV///WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Ruines Sec Sec",
-                "hash": "mkwii/desert_course;ShareData=AWD0sUrU9RTt!C69X|Pg=K7Gz6mL|1Uk^E}T62Q^WHLw*UF]*59E[E8UmQn}WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Ruines Sec Sec",
-                "hash": "mkwii/desert_course;ShareData=AbY~k9s5u~9FEP39T++OV)qI;Q}LneUbz3?9D{0oV[CuAUAuf?8=,;(9y4t2+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Route Clair de Lune",
-                "hash": "mkwii/ridgehighway_course;ShareData=AA;fF9p(;aTfAynUJa}wWl~R&RQ]gNUs9L?8_x!)V4H_W9IdeM8$uTP9l4HF=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Route Clair de Lune",
-                "hash": "mkwii/ridgehighway_course;ShareData=AV]xf9rK5w8VRZ!Uep+bWTDR$RP8HsUwIluTA6iLWL^n,950?BTKVVL9uJCbWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Château de Bowser",
-                "hash": "mkwii/koopa_course;ShareData=AU2&U9sQ^99Fs1GUv+/dV4QbqRbih3UlE+~T/KcQWKm$Q93~^4T1=8H95rkp=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Château de Bowser",
-                "hash": "mkwii/koopa_course;ShareData=AU(B;9k?u-TZJ^aUBc6(=U&6^Q]^=5UbWA)9bL*HV)?Lr9bo(M9Z?oP9l~3d+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Route Arc-en-ciel",
-                "hash": "mkwii/rainbow_course;ShareData=AQcn:9l/ev9g[-MUezl9=WU0}5(mBNUYn+wUSo6QWkmDn9lLNSUH0oQ90Hyw=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Route Arc-en-ciel",
-                "hash": "mkwii/rainbow_course;ShareData=AZ$ikUu?[KTw;6@8[S9*V-vEp5!q0EUWa9eUM+kTWFp-PT&)]b9dw;vUibG{V[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Peach Beach (GCN)",
-                "hash": "mkwii/old_peach_gc;ShareData=AJ(E6UrirMT3bJYUVNKK=M1Q-Q?=*cUl6p08{2q?WB^xL9zxoIT7dJMUVm+tV[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Peach Beach (GCN)",
-                "hash": "mkwii/old_peach_gc;ShareData=AGo@oUp|p@T:mK/93^h2V;:cNQ|NyZUhi-6T(altV*~n^Uij=f8;}99UXkkL=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Yoshi Falls (DS)",
-                "hash": "mkwii/old_falls_ds;ShareData=AAKJ:9mLCeTJA&{9LemRWE)]AS|aQcUmy6-8Um~[WFJEuUHs4X8e1ih9mJE++5",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mario Circuit (N64)",
-                "hash": "mkwii/old_mario_64;ShareData=Aa+/?9koJqT4}T|9aeqAV{0Ta5/mduUd20sURO)TVuO;VUGh0TUCN@99o9J&=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mario Circuit (N64)",
-                "hash": "mkwii/old_mario_64;ShareData=AHj!nUWYr|8)IaF9x4pW=G+QBQ,FP9Uf:=28@@BTVz*x9Uq~$lT6~esUYkyS+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Sherbet Land (N64)",
-                "hash": "mkwii/old_sherbet_64;ShareData=AauPtUgVaVTu9829R_sKWS5D-Qs9wtUkvA~T_z]3WAZ1SUHNFB8_I[eUc|(_+^",
-                  "x": 0,
-                  "z": 0
-            },
-            {
-                "level": "Sherbet Land (N64)",
-                "hash": "mkwii/old_sherbet_64;ShareData=AO&tKUW5d)84Rz,Um4yi+(/bZQ]7CNUf4JHT5qQ:V~oYI9k!]p862&{Ue:_YWP",
-                  "x": 0,
-                  "z": 0
-            },
-            {
-                "level": "Shy Guy Beach (GBA)",
-                "hash": "mkwii/old_heyho_gba;ShareData=AVTypUV~S8TiEb5UQzDNWbQ3bQ}XTXUgUvY8;iFFV0U6|9Z*fkT-8vVUn)[^+^",
-                  "x": 0,
-                  "z": 0
-            },
-            {
-                "level": "Delphino Square (DS)",
-                "hash": "mkwii/old_town_ds;ShareData=ATo8nT~S{j9SFBzUfNqhWnv!FQ}rp|UhCz$USmb8V@20u9wBoF8w|n3T-*6[V[",
-                  "x": 0,
-                  "z": 0
-            },
-            {
-                "level": "Delphino Square (DS)",
-                "hash": "mkwii/old_town_ds;ShareData=AXC&V9OLW79e~hxUZB~+Vp8}86NQ+zUf,C-UUJ*yV@4,Q9k|,rT!U6Y9JZeEWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Waluigi Stadium (GCN)",
-                "hash": "mkwii/old_waluigi_gc;ShareData=AXV3:UlT*BTY9pmT&Ht0V]w}0Q7}l6UVTMd9TyfLV3+cy8-HJ*UH@|bUq+TX+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Waluigi Stadium (GCN)",
-                "hash": "mkwii/old_waluigi_gc;ShareData=AUxHaUEM|,T90~(9y{6r+{3|T6CSi=UwCcRT!nr*V,J;zUdanS8t1s$T*S7]WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Desert Hills (DS)",
-                "hash": "mkwii/old_desert_ds;ShareData=AZ|p3Ust,n9DVF[UId]pWJN_I6ln:tUipMhUMAT_WKrZ=9NY(S9HjO}UlRw=WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Desert Hills (DS)",
-                "hash": "mkwii/old_desert_ds;ShareData=AL?QfUns[gT&KGSUJAJ!=OA9|57H1?UecdN9cNzrWI;[S9Q{ThUR]:^Ui8?B=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Bowser Castle 3 (GBA)",
-                "hash": "mkwii/old_koopa_gba;ShareData=AGeDWUuG7qT5@gQ97jaT=z!3Z5~5c3UhLJPT6fqxV:wm5UbO&28_3EUUa=9_WP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "DK's Jungle Parkway",
-                "hash": "mkwii/old_donkey_64;ShareData=AR/_dUYsb@9X}|OUZ(&PVTC&bQxXj{Uj[I[UU1F)WBaZg9m0Ij8/JCOUuN?Z+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "DK's Jungle Parkway",
-                "hash": "mkwii/old_donkey_64;ShareData=AFb|?UiY-?T96mh9IJ5b+!ou*5!YoCUrc04UNVN6WG=i1UTz/|9SizdUZaMRV[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mario Circuit (GCN)",
-                "hash": "mkwii/old_mario_gc;ShareData=AV[{g963L+ThYseT:yP?=LZn&Q7s5XUf=Sj8@|3RV_f288(twE8^hj~9hpb^V[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mario Circuit (GCN)",
-                "hash": "mkwii/old_mario_gc;ShareData=AW:m,9H;qrT,fWI92Nd=+8v*w59lcTUa28VT2t05V/O8fUeE(5TZ^8-9erS1V[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Mario Circuit 3 (SNES)",
-                "hash": "mkwii/old_mario_sfc;ShareData=AUmt}9k8[?9O&C2UuJZ)WjF3]RMwa!Uh1GlUMa4;V[wuI90CuST|Sk]9ycAu+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Peach Gardens (DS)",
-                "hash": "mkwii/old_garden_ds;ShareData=AEl$69i9*F8kk,bUUfelWo,=96Q;loUdEp?T/:g$V|mhS9Mc|@T={{D9rR$eV[",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Peach Gardens (DS)",
-                "hash": "mkwii/old_garden_ds;ShareData=ARbk&UgpL^T[X)39zG7c=fYi4RYM*@UckX-T7lpvWJc&EUZ*cU8@DTIUvtr~Vt",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "DK Mountain (GCN)",
-                "hash": "mkwii/old_donkey_gc;ShareData=AV=~AUsKL58)I6;UFdt/We2rEQ$Nk2UeQqZT((y^V(,9:9HY8z9RDCfUVwlgWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "DK Mountain (GCN)",
-                "hash": "mkwii/old_donkey_gc;ShareData=AIyFW9wJxaT2*PuUr7}dWXN1hQ@-E^UqW7a9bp/dV$Q?Z9kP6H9VbE*94g[b=a",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Château de Bowser (N64)",
-                "hash": "mkwii/old_koopa_64;ShareData=AM:M}UkY&VT7X5+9oDP9WpBJv5jZPjUu=hxT,j6RWLCM5UncrK8{BQ|UjF[rWP",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Château de Bowser (N64)",
-                "hash": "mkwii/old_koopa_64;ShareData=AUrqW9jD7gT2@yR9j=}?Vfo5oQsnwRUr/g;UHA4|WBGXsUlm(}T91OO9k(W(+5",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Château de Bowser (N64)",
-                "hash": "mkwii/old_koopa_64;ShareData=AZ4C?T,2{s9C~zsUwM)6WhrE/5B9K,Uku^KT(6eoV)T|N9w&RF8W2jPT:RSE+^",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Château de Bowser (N64)",
-                "hash": "mkwii/old_koopa_64;ShareData=AS=|bUZw-aUD1&F9Qd}&=V{)c5@+@sUe*MZUHZZ!WIkNQUh&s59GIy3UpynJ+^",
-                "x": 0,
-                "z": 0
-            }
-        ]
-    },
-    {
-        "game": "Mario Kart DS",
-        "positions": [
-            {
-                "level": "Airship Fortress",
-                "hash": "mkds/airship_course;ShareData=AQFou9r{9D9J1-;UAZC}WV@7(6iW=CUl?O{UJpSuWp=7h9cEdlUOamb95XK@=2",
-                "x": 0,
-                "z": 0
-            },
-            {
-                "level": "Yoshi Circuit",
-                "hash": "mkds/old_yoshi_gc;ShareData=AE2a9UPHKT8{u7lUtBv*WT]qo6aL?&UsC;dT0!K+Wf^1+9z!LZ8qK(aUHt!w+^",
-                "x": 0,
-                "z": 0
-            }
-        ]
-    }
+  {
+    "game": "Mario Kart Wii",
+    "positions": [
+      {
+        "level": "Circuit Luigi",
+        "hash": "mkwii/beginner_course;ShareData=AEXBuUZx3-ULQlkUl~~=V:-*T5${@JUXsX,9d!lrV?drQ9z{9AUEyr}UsVfAV[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Luigi",
+        "hash": "mkwii/beginner_course;ShareData=AVp3F8=i499Un[yUZ*R,=F2E^RHffNUmjHXUJgLgV^;JU9v,w@Tj23D8]M=LWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Prairie Meuh Meuh",
+        "hash": "mkwii/farm_course;ShareData=AT5F?UvGaX8$9jlUutO]V71e{Q_0XLUe;!BT3kb;V*S*K9r~Ma8/~0$Uqp~l+C",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Prairie Meuh Meuh",
+        "hash": "mkwii/farm_course;ShareData=AIb*,Ue;SkT?vp4Ug73fV5YmlQ61,DUd=6t9RSobV$XMw9o;E:T3e-+Uh7Dv=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Gorge Champignon",
+        "hash": "mkwii/kinoko_course;ShareData=Aa8cpT(!zfT-Oy@UfC7g+7Wwa6TqcoUp$Wo8[4G3V&a;59j}vnTq~x8USQLEV[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Gorge Champignon",
+        "hash": "mkwii/kinoko_course;ShareData=AJ;AxULaM*9G$joUXGz,VYbC&T?)GJUboM@UC=$KWK3sd9xJf}T[lLAUG[GcWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Usine Toad",
+        "hash": "mkwii/factory_course;ShareData=AL@OvUkkii8TVh58|rL[V]*(=RS^lXUjEGG8;o,hV5PP}T1u|hT7nVUUc&H{V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Usine Toad",
+        "hash": "mkwii/factory_course;ShareData=AH&u?UpTeKT@S|G9sFSK=cZ}-Qys0VUXm+JT6U7yWB/3-Uf*W(8uZx;UV1AOWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Usine Toad",
+        "hash": "mkwii/factory_course;ShareData=AL~{K9m9L38lC=dT{v6cV@R]P5no8lUgYJ~UMjoXV*MtG9e93_UN36b9wymb=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario",
+        "hash": "mkwii/castle_course;ShareData=AOuN99br}y9Ldl(9v|N6=M,=9Q&IiQUdUMc9L3_oV_H[:UvjBV8-40?9NMyQWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario",
+        "hash": "mkwii/castle_course;ShareData=ADw;TUjB?KUJ{=oUlokqWRrPP6D7/5UeZ[m9S~6BV-V*?9tB+-T(3c3Us3(;V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Supermarché Coco",
+        "hash": "mkwii/shopping_course;ShareData=ACmG?9YGDVT2;b394UMX=XU~j5&64@UrVr_T_]WlWJ2+&Uog[ZTrC=/9Ut+!=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Supermarché Coco",
+        "hash": "mkwii/shopping_course;ShareData=ALa2U9V*_uT)E[[9vSxt=Te&y6FI!QUvF;:UA=v@V9y}FUlMzXT:eJh9S&]h=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pic DK",
+        "hash": "mkwii/boardcross_course;ShareData=AE+j99n^JpTu0FHUTi=tWT/&HQepH1UcJ;(85;}$V~dVp9Uv:n86Yy+94$[EVt",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pic DK",
+        "hash": "mkwii/boardcross_course;ShareData=AA=}gUh~1vT;8cy9cuOVWZEC/6NztOUZ@1AUNXS!WgG*4T*@A@8]G=MUmSv7WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Mine Wario",
+        "hash": "mkwii/truck_course;ShareData=AU$qLUYZ8+T6!z=9Lw(m=lmiaQ=wobUfY_SUPAn,V]M5KT^KBE9MfA1UZ-c8WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Mine Wario",
+        "hash": "mkwii/truck_course;ShareData=AM|&nUYu0)8};0~UeESmV*vje5+b4RUu[ChUUm_gWA_-m9x*Xc9N~4hUf*bWWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Daisy",
+        "hash": "mkwii/senior_course;ShareData=ATS|$94[G5T-o-NUIpr|V)kP15/4pwUe~h39J,y)Vyg;X9P$Sl9QEW,9w|~WWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Daisy",
+        "hash": "mkwii/senior_course;ShareData=AHf{Z931@a8:Qa=9U}1G=Q!2258M_?UpD@Q9NxW0V=K@|UPCg79HWXs9w{?d+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Cap Koopa",
+        "hash": "mkwii/water_course;ShareData=ANDf_9t~ik8(H@^UtI0V=EM3d6G1VQUlJ?$T1TXfWmFvN9i0}:T;0K_9kRlN=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Cap Koopa",
+        "hash": "mkwii/water_course;ShareData=AAoFdUIAIi9QQO79w84yV8GDx5,:~mUgF}:9MPl(V)x|*UuL0hT4cHiT^X?cV[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Cap Koopa",
+        "hash": "mkwii/water_course;ShareData=APJSv9tjR-UHo,pUfM$)VU1;:5@{/_Usn6g9L3qHV{!!59qI3Y9W8Af92icwWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Bois Vermeil",
+        "hash": "mkwii/treehouse_course;ShareData=ACQ1vUYvLV9Vzk;9yEZ0=O+U1Qtl3+Ug5:h9VuI,V7(1cUc8VlUAkoMUZ:9T=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Bois Vermeil",
+        "hash": "mkwii/treehouse_course;ShareData=AJLb?9u~~WUBVd?Uln-VWLQ7ARXVRdUi,)A9Qb,VV{i$J91q[;8}9=e92kIxWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Bois Vermeil",
+        "hash": "mkwii/treehouse_course;ShareData=ARIZ?UXP5sUMCv:94z4/=wwz!8v=9qUwZLsT)49[WTf;EUhGWv9Wi!OUs6(;WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Volcan Grondant",
+        "hash": "mkwii/volcano_course;ShareData=AG-ExUeW4ST4gI&Ub9,wWFK$*5+G)fUsY_a8/KlvV4+v@9pcViT4cGdUrl~+Wq",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Volcan Grondant",
+        "hash": "mkwii/volcano_course;ShareData=AG{Vf9LIY7UNvwm9pdHp=r_?+Q[x@/Ui${/T{2,iWE8k2Um;xyT])$f9GvIG+5",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Ruines Sec Sec",
+        "hash": "mkwii/desert_course;ShareData=AOmVaUcN|:TZgbo9FRd&=agVYQ0==|Uio8_UHLOvV(,5xT!LxY9GB6:UV///WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Ruines Sec Sec",
+        "hash": "mkwii/desert_course;ShareData=AWD0sUrU9RTt!C69X|Pg=K7Gz6mL|1Uk^E}T62Q^WHLw*UF]*59E[E8UmQn}WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Ruines Sec Sec",
+        "hash": "mkwii/desert_course;ShareData=AbY~k9s5u~9FEP39T++OV)qI;Q}LneUbz3?9D{0oV[CuAUAuf?8=,;(9y4t2+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Clair de Lune",
+        "hash": "mkwii/ridgehighway_course;ShareData=AA;fF9p(;aTfAynUJa}wWl~R&RQ]gNUs9L?8_x!)V4H_W9IdeM8$uTP9l4HF=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Clair de Lune",
+        "hash": "mkwii/ridgehighway_course;ShareData=AV]xf9rK5w8VRZ!Uep+bWTDR$RP8HsUwIluTA6iLWL^n,950?BTKVVL9uJCbWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser",
+        "hash": "mkwii/koopa_course;ShareData=AU2&U9sQ^99Fs1GUv+/dV4QbqRbih3UlE+~T/KcQWKm$Q93~^4T1=8H95rkp=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser",
+        "hash": "mkwii/koopa_course;ShareData=AU(B;9k?u-TZJ^aUBc6(=U&6^Q]^=5UbWA)9bL*HV)?Lr9bo(M9Z?oP9l~3d+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Arc-en-ciel",
+        "hash": "mkwii/rainbow_course;ShareData=AQcn:9l/ev9g[-MUezl9=WU0}5(mBNUYn+wUSo6QWkmDn9lLNSUH0oQ90Hyw=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Arc-en-ciel",
+        "hash": "mkwii/rainbow_course;ShareData=AZ$ikUu?[KTw;6@8[S9*V-vEp5!q0EUWa9eUM+kTWFp-PT&)]b9dw;vUibG{V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plage Peach (GCN)",
+        "hash": "mkwii/old_peach_gc;ShareData=AJ(E6UrirMT3bJYUVNKK=M1Q-Q?=*cUl6p08{2q?WB^xL9zxoIT7dJMUVm+tV[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plage Peach (GCN)",
+        "hash": "mkwii/old_peach_gc;ShareData=AGo@oUp|p@T:mK/93^h2V;:cNQ|NyZUhi-6T(altV*~n^Uij=f8;}99UXkkL=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Cascade Yoshi (DS)",
+        "hash": "mkwii/old_falls_ds;ShareData=AAKJ:9mLCeTJA&{9LemRWE)]AS|aQcUmy6-8Um~[WFJEuUHs4X8e1ih9mJE++5",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario (N64)",
+        "hash": "mkwii/old_mario_64;ShareData=Aa+/?9koJqT4}T|9aeqAV{0Ta5/mduUd20sURO)TVuO;VUGh0TUCN@99o9J&=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario (N64)",
+        "hash": "mkwii/old_mario_64;ShareData=AHj!nUWYr|8)IaF9x4pW=G+QBQ,FP9Uf:=28@@BTVz*x9Uq~$lT6~esUYkyS+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Royaume Sorbet (N64)",
+        "hash": "mkwii/old_sherbet_64;ShareData=AauPtUgVaVTu9829R_sKWS5D-Qs9wtUkvA~T_z]3WAZ1SUHNFB8_I[eUc|(_+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Royaume Sorbet (N64)",
+        "hash": "mkwii/old_sherbet_64;ShareData=AO&tKUW5d)84Rz,Um4yi+(/bZQ]7CNUf4JHT5qQ:V~oYI9k!]p862&{Ue:_YWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plage Maskass (GBA)",
+        "hash": "mkwii/old_heyho_gba;ShareData=AVTypUV~S8TiEb5UQzDNWbQ3bQ}XTXUgUvY8;iFFV0U6|9Z*fkT-8vVUn)[^+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Quartier Delfino (DS)",
+        "hash": "mkwii/old_town_ds;ShareData=ATo8nT~S{j9SFBzUfNqhWnv!FQ}rp|UhCz$USmb8V@20u9wBoF8w|n3T-*6[V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Quartier Delfino (DS)",
+        "hash": "mkwii/old_town_ds;ShareData=AXC&V9OLW79e~hxUZB~+Vp8}86NQ+zUf,C-UUJ*yV@4,Q9k|,rT!U6Y9JZeEWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Stade Waluigi (GCN)",
+        "hash": "mkwii/old_waluigi_gc;ShareData=AXV3:UlT*BTY9pmT&Ht0V]w}0Q7}l6UVTMd9TyfLV3+cy8-HJ*UH@|bUq+TX+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Stade Waluigi (GCN)",
+        "hash": "mkwii/old_waluigi_gc;ShareData=AUxHaUEM|,T90~(9y{6r+{3|T6CSi=UwCcRT!nr*V,J;zUdanS8t1s$T*S7]WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Désert du Soleil (DS)",
+        "hash": "mkwii/old_desert_ds;ShareData=AZ|p3Ust,n9DVF[UId]pWJN_I6ln:tUipMhUMAT_WKrZ=9NY(S9HjO}UlRw=WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Désert du Soleil (DS)",
+        "hash": "mkwii/old_desert_ds;ShareData=AL?QfUns[gT&KGSUJAJ!=OA9|57H1?UecdN9cNzrWI;[S9Q{ThUR]:^Ui8?B=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser 3 (GBA)",
+        "hash": "mkwii/old_koopa_gba;ShareData=AGeDWUuG7qT5@gQ97jaT=z!3Z5~5c3UhLJPT6fqxV:wm5UbO&28_3EUUa=9_WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jungle DK",
+        "hash": "mkwii/old_donkey_64;ShareData=AR/_dUYsb@9X}|OUZ(&PVTC&bQxXj{Uj[I[UU1F)WBaZg9m0Ij8/JCOUuN?Z+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jungle DK",
+        "hash": "mkwii/old_donkey_64;ShareData=AFb|?UiY-?T96mh9IJ5b+!ou*5!YoCUrc04UNVN6WG=i1UTz/|9SizdUZaMRV[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario (GCN)",
+        "hash": "mkwii/old_mario_gc;ShareData=AV[{g963L+ThYseT:yP?=LZn&Q7s5XUf=Sj8@|3RV_f288(twE8^hj~9hpb^V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario (GCN)",
+        "hash": "mkwii/old_mario_gc;ShareData=AW:m,9H;qrT,fWI92Nd=+8v*w59lcTUa28VT2t05V/O8fUeE(5TZ^8-9erS1V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario 3 (SNES)",
+        "hash": "mkwii/old_mario_sfc;ShareData=AUmt}9k8[?9O&C2UuJZ)WjF3]RMwa!Uh1GlUMa4;V[wuI90CuST|Sk]9ycAu+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jardin Peach (DS)",
+        "hash": "mkwii/old_garden_ds;ShareData=AEl$69i9*F8kk,bUUfelWo,=96Q;loUdEp?T/:g$V|mhS9Mc|@T={{D9rR$eV[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jardin Peach (DS)",
+        "hash": "mkwii/old_garden_ds;ShareData=ARbk&UgpL^T[X)39zG7c=fYi4RYM*@UckX-T7lpvWJc&EUZ*cU8@DTIUvtr~Vt",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Montagne DK (GCN)",
+        "hash": "mkwii/old_donkey_gc;ShareData=AV=~AUsKL58)I6;UFdt/We2rEQ$Nk2UeQqZT((y^V(,9:9HY8z9RDCfUVwlgWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Montagne DK (GCN)",
+        "hash": "mkwii/old_donkey_gc;ShareData=AIyFW9wJxaT2*PuUr7}dWXN1hQ@-E^UqW7a9bp/dV$Q?Z9kP6H9VbE*94g[b=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser (N64)",
+        "hash": "mkwii/old_koopa_64;ShareData=AM:M}UkY&VT7X5+9oDP9WpBJv5jZPjUu=hxT,j6RWLCM5UncrK8{BQ|UjF[rWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser (N64)",
+        "hash": "mkwii/old_koopa_64;ShareData=AUrqW9jD7gT2@yR9j=}?Vfo5oQsnwRUr/g;UHA4|WBGXsUlm(}T91OO9k(W(+5",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser (N64)",
+        "hash": "mkwii/old_koopa_64;ShareData=AZ4C?T,2{s9C~zsUwM)6WhrE/5B9K,Uku^KT(6eoV)T|N9w&RF8W2jPT:RSE+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser (N64)",
+        "hash": "mkwii/old_koopa_64;ShareData=AS=|bUZw-aUD1&F9Qd}&=V{)c5@+@sUe*MZUHZZ!WIkNQUh&s59GIy3UpynJ+^",
+        "x": 0,
+        "z": 0
+      }
+    ]
+  },
+  {
+    "game": "Mario Kart DS",
+    "positions": [
+      {
+        "level": "Circuit en 8",
+        "hash": "mkds/cross_course;ShareData=AE9kmUcJT,8;RvWUTPgsWD_@P6bC(NUmWMAT3Zu7WYD?=9U-*@8{hr[UroxjVt",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Cascade Yoshi",
+        "hash": "mkds/bank_course;ShareData=AH}p/UPpqm9E-fFUuu&=Wcf2WRYVFvUcXPjT_P;WWla5~9p_Ev8(:kOUQn;6WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plage Cheep Cheep",
+        "hash": "mkds/beach_course;ShareData=AXE)N9ob8H83oJ5UOHU/WT(nhQ$L|RUs3iKT3Ul^V(@uL9X1?/T67Nt9hr@r=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plage Cheep Cheep",
+        "hash": "mkds/beach_course;ShareData=AK:4)Ut=c1UKAP9UX[Jf=d[m+6MmUsUfCt59O)84Vzj|69r5DQT$42tUeEQ2Wq",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Manoir de Luigi",
+        "hash": "mkds/mansion_course;ShareData=AV2:W9W4l]T2=q)9nrAq=1V9+53LXVUkj?dT0GBlV)xg5UYqo^T0Su99F~v!=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Manoir de Luigi",
+        "hash": "mkds/mansion_course;ShareData=AV&iyUeajDT_[C)9x0^T=k,ha6C=i6Uwg&uT[;bcWB,HqUYtRF87vi2Uhq_:WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Désert du Soleil",
+        "hash": "mkds/desert_course;ShareData=AXnfIUIs&v8,j~vUmJsFWRJXB6DyZuUgUR=T+kHYWKPFC9i|l584{j*UJIxc+5",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Désert du Soleil",
+        "hash": "mkds/desert_course;ShareData=AQ1@M9uEJeT:;C096~d1=h)]15,x5kUe6E2T{Y}YV!mIbUckMRT1E[690~R$WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Quartier Delfino",
+        "hash": "mkds/town_course;ShareData=AX2*jUValdT]pKv9od)L=b@PgRP[v4UbZ^?T@+TwV!d!KUv77D8})kTUoSaN=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Quartier Delfino",
+        "hash": "mkds/town_course;ShareData=AFoHzUg8_98iWKmUtu;1WQXWNQ}C5mUwNK]TTMY_WN+/J9wO?O8XX{;UoJN6=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Flipper Waluigi",
+        "hash": "mkds/pinball_course;ShareData=AC/hS9tPd8UFo5T9V@L1=F$Wh6G(G^Ur8qWUZG51WXRY-T)C}RUZ]Ja9h/7aWq",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Flipper Waluigi",
+        "hash": "mkds/pinball_course;ShareData=ASc&IUu~@F89bqK8w,O8Wm:r*5n3mIUX~6V9f9y!WRhdZTz~!1UM|VEUl~:*Wq",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Corniche Champignon",
+        "hash": "mkds/ridge_course;ShareData=ALoq,UpbZ_87LW=9svxZ=l8S!6UWbEUWzz48w1+nWbZ:WUcE!ETugusUV3x?Wq",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Corniche Champignon",
+        "hash": "mkds/ridge_course;ShareData=AIY6e9WDL,9dU(ZUbS8P=efg^Q0@73UmzdjUG=![WQEo@9kU?,Tx8n)9I[6*WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Alpes DK",
+        "hash": "mkds/snow_course;ShareData=AHcEQ8_(eV9Z,Bk9s,;}=ruKYRV9USUdZ179Tq=,WHHh@Usb5y8Vl{L8/0rwWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Alpes DK",
+        "hash": "mkds/snow_course;ShareData=AKMEh9SooI8@*|cUnZWUWl$Q957oB6Uixj9T9FgfWoM0!9yp0mTZrZ69aY}a=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Alpes DK",
+        "hash": "mkds/snow_course;ShareData=AK==kUh|_&8|dt&UgSreVw_h!Q$ys}UgJ1lULt=_Wg=Sx9yO/;9N{PbUW/h(WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Horloge Tic-Tac",
+        "hash": "mkds/clock_course;ShareData=AGw{3Ud$1a81e?3UtO:9WS6$RQ_E/gUwWE/TuG^;Wal0895lrx8mewSUlX;8V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Horloge Tic-Tac",
+        "hash": "mkds/clock_course;ShareData=ATW2B9iT(78=8Z!T{CzC=OCb-6o4U_Uj$}@T1Cf,WG@Hy9GawpT2+Bn92&S(+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario",
+        "hash": "mkds/mario_course;ShareData=ABnj;93D;:TE=}o8@Su8=d/|i6Fiq=UfFn1T6}*yV{D!tT6jPxT@3_F9o!H?=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario",
+        "hash": "mkds/mario_course;ShareData=AA|u!UkGE?UJtw09o==uVzBx{Q,TDXUgS|yULgW=V*8TWUtG(P8_G=fUnd5m+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Bateau Volant",
+        "hash": "mkds/airship_course;ShareData=AAm^LUg2xxTvRWm9Tg?R=wjy;Q/c}rUe;+zT8sFIWks3@UTgO-8:?VZUY)K3=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Bateau Volant",
+        "hash": "mkds/airship_course;ShareData=AQFou9r{9D9J1-;UAZC}WV@7(6iW=CUl?O{UJpSuWp=7h9cEdlUOamb95XK@=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Bateau Volant",
+        "hash": "mkds/airship_course;ShareData=AJ[*ZUDSUyT9H/UUWRt~Wgj0]RGN3IUo6OJ8}RySV(2UY9s2hcTn*F)UJgZM=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Stade Wario",
+        "hash": "mkds/stadium_course;ShareData=AAn*ZUgd[KT5SPgUZXYU=v(5}6AY,eUj-gy9Q}P4V!}aw9vO6dUJ,QpUVULwWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Stade Wario",
+        "hash": "mkds/stadium_course;ShareData=AN4V?8|SpoT4S9-9hGv*=iptt6hW~JUcjB7T:g(7V*,b-UbnI-TO+Fw8}|J5Wq",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jardin Peach",
+        "hash": "mkds/garden_course;ShareData=AR9]F9AW-q8}DBYUkT_5We&r!5@7QhUl~(lT]e=GWZqUm9z,o0TItwT8$lOhWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jardin Peach",
+        "hash": "mkds/garden_course;ShareData=AB~/f9gg|]9BY[WUiU/3V$ugD5|DN,UZ+zaT&&1uWpe4A92WR}T[O|u9N7K8=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser",
+        "hash": "mkds/koopa_course;ShareData=ADOH19pw]k8[T0ZUDh&3Wf~kRQ;q=1Uh;EYT;fDXWo[}+9Wk/ST(UZ}9maZ)+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser",
+        "hash": "mkds/koopa_course;ShareData=AYjnP91r&AUQ&E1Uf!r-WL]IwQ!BmhUe}_T9Yf?xWa|l(9446!9dsP09me=S=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser",
+        "hash": "mkds/koopa_course;ShareData=AW^S]UBEX[8oV/LUlTt_=lTYlQ?,wSUWIf(TdNZSWdLF)9i8Zl8jMFdUBQUz+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser",
+        "hash": "mkds/koopa_course;ShareData=AUV/QUb-1k8WZLE9D:Mx=e[]+5tJBUUtdG=9d=^lWa@3TT]|2OUD;4lUiRK6Vt",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Arc-en-ciel",
+        "hash": "mkds/rainbow_course;ShareData=ARI$=T)KJU9X|9=Uqb(IWN&M16A@;&Ue+==UCCfNWgY0L9kQDC8*-h0T-zC7WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Arc-en-ciel",
+        "hash": "mkds/rainbow_course;ShareData=AQ/wc9rfg*T?r(:9aUxVWRf27Q^h}LUvKJXULp9sWem,/UHwi^UUHu49p{-^=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Arc-en-ciel",
+        "hash": "mkds/rainbow_course;ShareData=AOVkGUCGJ_8-:sw9h5b==D]hhQJb5qUb,vs9Crf=WptG~UfTRUTZ@+~T)Q[;WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Mario 1 (SNES)",
+        "hash": "mkds/old_mario_sfc;ShareData=AM-4n9ky:&8=yZNUrkuH=PHH6RPmxgUhowkT-PJ=V:XZ|91]c7T+N+X9wywdVt",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Ferme Meuh Meuh (N64)",
+        "hash": "mkds/old_momo_64;ShareData=AOg-HUc76fTQ?e?UGPti=fI^1Q|asyUpbtH8ZwgZWN6a09UC:[TKLW3Ud[U?+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Ferme Meuh Meuh (N64)",
+        "hash": "mkds/old_momo_64;ShareData=AShZF91kWt8]C}(UtW]vWb_]}Q~;QXUeh[*US]EtV{gfg9hi?vUOrhA9l&F]Vt",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Peach (GBA)",
+        "hash": "mkds/old_peach_agb;ShareData=AIS+^UsS(c8(va:UeC-?WkaWL5[y:LUqrvgUM?P{WA=&_9xcPa8]k}DUhOJGWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Peach (GBA)",
+        "hash": "mkds/old_peach_agb;ShareData=AZ(&28qMMTT{LI,9t2+o=bUYVRF6z,UegELT{nh+V]SiZUlXLXS_4,?84X@+WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Luigi (GCN)",
+        "hash": "mkds/old_luigi_gc;ShareData=AH6GiT)Rx,T55@!9t?!P=oJC&Q}ylaUiyJuT]j_xWK[U|Urx2o8ryqmUCm?|=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plaine Donut 1 (SNES)",
+        "hash": "mkds/old_donut_sfc;ShareData=AA3{vUen}J8_:r0Uk;e:WgFoJ6MOe0Un6MkT@Xb$WA^q090hnw8/pR_UY(^:WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plaine Donut 1 (SNES)",
+        "hash": "mkds/old_donut_sfc;ShareData=AW;La9m3XQT&Kx5UvnsdWAKtG6ju|xUY^s:8-kz&V6hf@947xG8(=}*94hy5=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Route Glagla (N64)",
+        "hash": "mkds/old_frappe_64;ShareData=AQ})n9wp&)TxlR49JC^n=lvYnQ}0g{UXcDoT,cU3V!0JVUIoQFT~lw,9o3lD+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser 2 (GBA)",
+        "hash": "mkds/old_koopa_agb;ShareData=AV+N2UBEMU8aB?RUoHpGWd3V66KmaLUm3-:TKsRpWJB@V972}M8dia9T*-3BWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Château de Bowser 2 (GBA)",
+        "hash": "mkds/old_koopa_agb;ShareData=AH=zG9l3ox8i^p79gpYaWZe426H,n~UoO(:8rOE?Wkm::UF45;8n2+;92l/Y=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Parc Baby",
+        "hash": "mkds/old_baby_gc;ShareData=AGFauUZ-c:8e_QtUH}IyV9?O=5vsXkUb?ZcT54_PWTA3o9Vye}9EgZtUddKWWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Plage Koopa 2",
+        "hash": "mkds/old_noko_sfc;ShareData=AbYq2UWP)-8nrnhT,&L^=mb,{RB2_zUwcFGT)(S=V?{nF9BJ=p9G}u4UaB26WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Montagne Choco",
+        "hash": "mkds/old_choco_64;ShareData=AXoU(UPn_G8[zzO9vdT0=hQWi6aKwpUiS;f9AyWuWBQ7yUdHQdTR9CGUR!1W+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Montagne Choco",
+        "hash": "mkds/old_choco_64;ShareData=ANr|19J(py8|RiSUa,toV|bb[RNw,bUqt~PT:zTyWTnMB96r!;TprFL9ajmDWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Luigi (GBA)",
+        "hash": "mkds/old_luigi_agb;ShareData=AE/MzUX0EVT3zVE9YGZU=r$1yRLo@SUZ&!mUKAg;V]UX5UKp~G9d!yiUte(SWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Luigi (GBA)",
+        "hash": "mkds/old_luigi_agb;ShareData=AZRuuUXxI}9CHcNUIg8]WoIShRRL9&Uo2B^T4Y0(WGJ(;9f)!X8_6;6UYT4~V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pont Champignon (GCN)",
+        "hash": "mkds/old_kinoko_gc;ShareData=AJxP=9r_VsTFk*ZT)x}^=iWd25~0_MUqIDm8s=S=WFOQs9V9xn81I5290v[K+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pont Champignon (GCN)",
+        "hash": "mkds/old_kinoko_gc;ShareData=ACnk~T^=Su9K7d29skOxWXN~rQfa5CUdJWn9J9jVWJ|BRUZ/O,T_(tgT{nb&=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pont Champignon (GCN)",
+        "hash": "mkds/old_kinoko_gc;ShareData=AZ~[dUR]1yT:nT(9mmnL=et605|Z*eUe_H9T_!aPWID{[UVh2h826PoUP8-WWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Île Choco 2 (SNES)",
+        "hash": "mkds/old_choco_sfc;ShareData=AEa|3UcEH28,_eeUVWD8Whiw/6WdT:UYZm$T]zVKWDFzb9sVve8*dz^Ufei3V[",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Île Choco 2 (SNES)",
+        "hash": "mkds/old_choco_sfc;ShareData=ADn|G91,IaTdI-}9uzZm=p5ZA6J7F;UsL14Tbe~)WGtl;UfU3qTZVeg9vftM=a",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pont Lugubre (N64)",
+        "hash": "mkds/old_hyudoro_64;ShareData=AP,Wo97:uJ9bud[UYiUqWUN@~Q(gznUlAYUUB1r$WAtkn9t/e(T::kB93&gt=2",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Pont Lugubre (N64)",
+        "hash": "mkds/old_hyudoro_64;ShareData=AaA/RUe6$fTzeR;9OAn^=tN)!Q2dqKUaoN(T&RG*WL[6,UAJEo9A0B!Uel2_WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jardin volant",
+        "hash": "mkds/old_sky_agb;ShareData=AEaR89v}wAT@VpE9Y/?Q=rZ4!6M+TmUjlX$USmd(WMv[]UHSF)T^;$S91lsK+^",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Jardin volant",
+        "hash": "mkds/old_sky_agb;ShareData=ATzQVUv3l28?]]^Uwf2GWRfws6B=WjUe~u(T3O1SWLn{Q95Y~38_I^CUrOl,WP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Yoshi",
+        "hash": "mkds/old_yoshi_gc;ShareData=AFD7?Uhcky8Vm;[UWY3a+)5g^5qQ|VUWgOLTh7IGWQQ4R9hx^n8e27!UX-NBWP",
+        "x": 0,
+        "z": 0
+      },
+      {
+        "level": "Circuit Yoshi",
+        "hash": "mkds/old_yoshi_gc;ShareData=AE2a9UPHKT8{u7lUtBv*WT]qo6aL?&UsC;dT0!K+Wf^1+9z!LZ8qK(aUHt!w+^",
+        "x": 0,
+        "z": 0
+      }
+    ]
+  }
 ]
