@@ -23,9 +23,11 @@ public class Match {
 
     private final String hostId;
 
+    /** Game pack slug (e.g. "mario-kart-wii"). */
+    private final String gamePack;
+
     private MatchStatus status;
 
-    /** Exactly 5 rounds per match. */
     private final List<Round> rounds;
 
     /** Index into rounds (0-based). */

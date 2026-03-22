@@ -29,6 +29,9 @@ public class MatchEntity {
     @Column(name = "host_id", nullable = false)
     private String hostId;
 
+    @Column(name = "game_pack", length = 64)
+    private String gamePack;
+
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 

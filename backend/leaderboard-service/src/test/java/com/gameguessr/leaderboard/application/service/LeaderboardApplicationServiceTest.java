@@ -84,4 +84,23 @@ class LeaderboardApplicationServiceTest {
 
         verify(leaderboardRepository).getTopN(GLOBAL_KEY, 100);
     }
+
+    @Test
+    @DisplayName("recordScore — 0 points still updates both leaderboards")
+    void recordScore_zeroPoints_stillUpdatesLeaderboards() {
+        service.recordScore(ROOM_CODE, PLAYER_ID, 0);
+
+        verify(leaderboardRepository).incrementScore(GLOBAL_KEY, PLAYER_ID, 0.0);
+        verify(leaderboardRepository).incrementScore(ROOM_KEY_PREFIX + ROOM_CODE, PLAYER_ID, 0.0);
+    }
+
+    @Test
+    @DisplayName("getGlobalLeaderboard — topN=0 uses default")
+    void getGlobalLeaderboard_zeroTopN_usesDefault() {
+        when(leaderboardRepository.getTopN(GLOBAL_KEY, 100)).thenReturn(List.of());
+
+        service.getGlobalLeaderboard(0);
+
+        verify(leaderboardRepository).getTopN(GLOBAL_KEY, 100);
+    }
 }

@@ -18,4 +18,5 @@ public class RoundUpdateEvent {
     private long startedAt;
     private String gameId;
     private String levelId;
+    private String noclipHash;
 }

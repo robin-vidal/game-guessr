@@ -13,8 +13,6 @@ replay_pid*
 
 # Maven wrapper
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
 # ── Spring Boot ───────────────────────────────────────────────────────────
 spring-shell.log

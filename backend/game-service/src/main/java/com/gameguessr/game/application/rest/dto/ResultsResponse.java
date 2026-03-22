@@ -6,10 +6,6 @@ import lombok.Data;
 
 import java.util.List;
 
-/**
- * Response for {@code GET /api/v1/rooms/{code}/results}.
- * Reveals the true spawn coordinates now that the match is finished.
- */
 @Data
 @Builder
 @Schema(description = "Final match results including true spawn coordinates per round")
@@ -31,12 +27,10 @@ public class ResultsResponse {
         private int roundNumber;
         private String gameId;
         private String levelId;
+        private String noclipHash;
 
         @Schema(description = "True spawn X coordinate")
         private double trueSpawnX;
-
-        @Schema(description = "True spawn Y coordinate")
-        private double trueSpawnY;
 
         @Schema(description = "True spawn Z coordinate")
         private double trueSpawnZ;

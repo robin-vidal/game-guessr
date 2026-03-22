@@ -125,4 +125,64 @@ class ScoringApplicationServiceTest {
         assertThat(result).isEmpty();
         verify(scoreRepository).findByRoomCode(ROOM_CODE);
     }
+
+    @Test
+    @DisplayName("scoreGuess — LEVEL with blank textAnswer gives 0 points")
+    void scoreGuess_levelBlank_gives0() {
+        when(scoreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Score result = service.scoreGuess(ROOM_CODE, 1, PLAYER_ID,
+                "LEVEL", "", null, null, null, Instant.now().toString());
+
+        assertThat(result.getPoints()).isEqualTo(0);
+        assertThat(result.isCorrect()).isFalse();
+    }
+
+    @Test
+    @DisplayName("scoreGuess — LEVEL with null submittedAt gives base points only")
+    void scoreGuess_levelNullSubmittedAt_givesBasePoints() {
+        when(scoreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Score result = service.scoreGuess(ROOM_CODE, 1, PLAYER_ID,
+                "LEVEL", "BabyPark", null, null, null, null);
+
+        assertThat(result.getPoints()).isEqualTo(500);
+        assertThat(result.isCorrect()).isTrue();
+    }
+
+    @Test
+    @DisplayName("scoreGuess — LEVEL with invalid submittedAt falls back to base points")
+    void scoreGuess_levelInvalidSubmittedAt_givesBasePoints() {
+        when(scoreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Score result = service.scoreGuess(ROOM_CODE, 1, PLAYER_ID,
+                "LEVEL", "BabyPark", null, null, null, "not-a-timestamp");
+
+        assertThat(result.getPoints()).isEqualTo(500);
+        assertThat(result.isCorrect()).isTrue();
+    }
+
+    @Test
+    @DisplayName("scoreGuess — unknown phase gives 0 points and false correct")
+    void scoreGuess_unknownPhase_gives0() {
+        when(scoreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Score result = service.scoreGuess(ROOM_CODE, 1, PLAYER_ID,
+                "UNKNOWN", null, null, null, null, null);
+
+        assertThat(result.getPoints()).isEqualTo(0);
+        assertThat(result.isCorrect()).isFalse();
+    }
+
+    @Test
+    @DisplayName("scoreGuess — null GAME textAnswer gives 0 points")
+    void scoreGuess_gameNullTextAnswer_gives0() {
+        when(scoreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Score result = service.scoreGuess(ROOM_CODE, 1, PLAYER_ID,
+                "GAME", null, null, null, null, null);
+
+        assertThat(result.getPoints()).isEqualTo(0);
+        assertThat(result.isCorrect()).isFalse();
+    }
 }

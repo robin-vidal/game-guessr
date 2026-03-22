@@ -73,7 +73,7 @@ class GameControllerTest {
         // ── GET /round ────────────────────────────────────────────────────
 
         @Test
-        @DisplayName("GET /round — 200 with round info")
+        @DisplayName("GET /round — 200 with round info including noclipHash")
         void getCurrentRound_returns200() throws Exception {
                 Round round = buildRound(1, GuessPhase.GAME);
                 when(gameUseCase.getCurrentRound(ROOM_CODE)).thenReturn(round);
@@ -82,18 +82,19 @@ class GameControllerTest {
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.roundNumber").value(1))
                                 .andExpect(jsonPath("$.currentPhase").value("GAME"))
-                                .andExpect(jsonPath("$.gameId").value("mario-kart-8"));
+                                .andExpect(jsonPath("$.gameId").value("mario-kart-wii"))
+                                .andExpect(jsonPath("$.noclipHash").value("mkwii/beginner_course;ShareData=test"));
         }
 
-    @Test
-    @DisplayName("GET /round — 404 when room not found")
-    void getCurrentRound_notFound_returns404() throws Exception {
-        when(gameUseCase.getCurrentRound(ROOM_CODE))
-                .thenThrow(new MatchNotFoundException(ROOM_CODE));
+        @Test
+        @DisplayName("GET /round — 404 when room not found")
+        void getCurrentRound_notFound_returns404() throws Exception {
+                when(gameUseCase.getCurrentRound(ROOM_CODE))
+                        .thenThrow(new MatchNotFoundException(ROOM_CODE));
 
-        mockMvc.perform(get("/api/v1/rooms/{code}/round", ROOM_CODE))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(get("/api/v1/rooms/{code}/round", ROOM_CODE))
+                        .andExpect(status().isNotFound());
+        }
 
         // ── POST /guess ───────────────────────────────────────────────────
 
@@ -105,7 +106,7 @@ class GameControllerTest {
                 GuessRequest req = new GuessRequest();
                 req.setPlayerId("player-1");
                 req.setPhase("GAME");
-                req.setTextAnswer("Mario Kart 8");
+                req.setTextAnswer("Mario Kart Wii");
 
                 mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,7 +130,7 @@ class GameControllerTest {
         // ── GET /results ──────────────────────────────────────────────────
 
         @Test
-        @DisplayName("GET /results — 200 with all rounds")
+        @DisplayName("GET /results — 200 with rounds including noclipHash and no trueSpawnY")
         void getResults_returns200() throws Exception {
                 List<Round> rounds = List.of(buildRound(1, GuessPhase.SPOT));
                 when(gameUseCase.getResults(ROOM_CODE)).thenReturn(rounds);
@@ -137,7 +138,70 @@ class GameControllerTest {
                 mockMvc.perform(get("/api/v1/rooms/{code}/results", ROOM_CODE))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.roomCode").value(ROOM_CODE))
-                                .andExpect(jsonPath("$.rounds").isArray());
+                                .andExpect(jsonPath("$.rounds").isArray())
+                                .andExpect(jsonPath("$.rounds[0].noclipHash").value("mkwii/beginner_course;ShareData=test"))
+                                .andExpect(jsonPath("$.rounds[0].trueSpawnX").value(0.0))
+                                .andExpect(jsonPath("$.rounds[0].trueSpawnZ").value(0.0))
+                                .andExpect(jsonPath("$.rounds[0].trueSpawnY").doesNotExist());
+        }
+
+        // ── Additional coverage ───────────────────────────────────────────
+
+        @Test
+        @DisplayName("POST /start — 409 when match already started")
+        void startMatch_alreadyStarted_returns409() throws Exception {
+                when(gameUseCase.startMatch(eq(ROOM_CODE), any()))
+                                .thenThrow(new com.gameguessr.game.domain.exception.MatchAlreadyStartedException(ROOM_CODE));
+
+                StartMatchRequest req = new StartMatchRequest();
+                req.setHostId("host-1");
+
+                mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isConflict());
+        }
+
+        @Test
+        @DisplayName("GET /round — 409 when match is not in progress")
+        void getCurrentRound_notInProgress_returns409() throws Exception {
+                when(gameUseCase.getCurrentRound(ROOM_CODE))
+                                .thenThrow(new IllegalStateException("Match is not in progress"));
+
+                mockMvc.perform(get("/api/v1/rooms/{code}/round", ROOM_CODE))
+                                .andExpect(status().isConflict());
+        }
+
+        @Test
+        @DisplayName("POST /guess — 400 when playerId is blank")
+        void submitGuess_blankPlayerId_returns400() throws Exception {
+                GuessRequest req = new GuessRequest();
+                req.setPlayerId("");
+                req.setPhase("GAME");
+                req.setTextAnswer("Mario Kart Wii");
+
+                mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("POST /guess — 202 for valid SPOT phase guess")
+        void submitGuess_spotPhase_returns202() throws Exception {
+                doNothing().when(gameUseCase).submitGuess(eq(ROOM_CODE), any());
+
+                GuessRequest req = new GuessRequest();
+                req.setPlayerId("player-1");
+                req.setPhase("SPOT");
+                req.setGuessX(100.0);
+                req.setGuessY(50.0);
+                req.setGuessZ(-200.0);
+
+                mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isAccepted());
         }
 
         // ── helpers ──────────────────────────────────────────────────────
@@ -147,6 +211,7 @@ class GameControllerTest {
                                 .id(UUID.randomUUID())
                                 .roomCode(ROOM_CODE)
                                 .hostId("host-1")
+                                .gamePack("mario-kart-wii")
                                 .status(MatchStatus.IN_PROGRESS)
                                 .rounds(List.of(buildRound(1, GuessPhase.GAME)))
                                 .currentRoundIndex(0)
@@ -158,8 +223,9 @@ class GameControllerTest {
                                 .id(UUID.randomUUID())
                                 .roundNumber(number)
                                 .gamePackEntry(GamePackEntry.builder()
-                                                .gameId("mario-kart-8")
-                                                .levelId("TBD-" + number)
+                                                .gameId("mario-kart-wii")
+                                                .levelId("Luigi Circuit")
+                                                .noclipHash("mkwii/beginner_course;ShareData=test")
                                                 .build())
                                 .currentPhase(phase)
                                 .finished(false)

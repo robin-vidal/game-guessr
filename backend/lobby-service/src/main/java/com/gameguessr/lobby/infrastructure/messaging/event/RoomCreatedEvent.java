@@ -15,4 +15,5 @@ public class RoomCreatedEvent {
     private String roomCode;
     private String hostId;
     private boolean isPrivate;
+    private String gamePack;
 }

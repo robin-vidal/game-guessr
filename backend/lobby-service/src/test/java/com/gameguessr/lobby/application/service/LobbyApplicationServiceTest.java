@@ -180,6 +180,60 @@ class LobbyApplicationServiceTest {
                 .isInstanceOf(RoomNotFoundException.class);
     }
 
+    // ── findOpenRooms ────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("findOpenRooms — delegates to roomRepository")
+    void findOpenRooms_delegates() {
+        when(roomRepository.findByStatus(RoomStatus.OPEN)).thenReturn(List.of());
+
+        List<Room> result = service.findOpenRooms();
+
+        assertThat(result).isEmpty();
+        verify(roomRepository).findByStatus(RoomStatus.OPEN);
+    }
+
+    // ── getRoom ────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("getRoom — returns room when found")
+    void getRoom_found_returnsRoom() {
+        Room room = buildRoom(RoomStatus.OPEN, 1);
+        when(roomRepository.findByCode(ROOM_CODE)).thenReturn(Optional.of(room));
+
+        Room result = service.getRoom(ROOM_CODE);
+
+        assertThat(result.getRoomCode()).isEqualTo(ROOM_CODE);
+    }
+
+    // ── joinRoom FULL transition ──────────────────────────────────────
+
+    @Test
+    @DisplayName("joinRoom — room transitions to FULL when last slot filled")
+    void joinRoom_fillsRoom_transitionsToFull() {
+        Room room = buildRoom(RoomStatus.OPEN, 7);  // 7 players, maxPlayers=8
+        when(roomRepository.findByCode(ROOM_CODE)).thenReturn(Optional.of(room));
+        when(roomRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Room result = service.joinRoom(ROOM_CODE, "player-8", "Player8");
+
+        assertThat(result.getStatus()).isEqualTo(RoomStatus.FULL);
+    }
+
+    // ── leaveRoom OPEN transition ─────────────────────────────────────
+
+    @Test
+    @DisplayName("leaveRoom — full room transitions back to OPEN when player leaves")
+    void leaveRoom_fullRoomPlayerLeaves_transitionsToOpen() {
+        Room room = buildRoom(RoomStatus.FULL, 8);
+        when(roomRepository.findByCode(ROOM_CODE)).thenReturn(Optional.of(room));
+        when(roomRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.leaveRoom(ROOM_CODE, "player-1");
+
+        verify(roomRepository).save(argThat(r -> r.getStatus() == RoomStatus.OPEN));
+    }
+
     // ── helpers ──────────────────────────────────────────────────────
 
     private Room buildRoom(RoomStatus status, int playerCount) {
