@@ -5,11 +5,11 @@ WORKDIR /app
 ARG NOCLIP_FRONTEND_URL=http://localhost:8000
 ENV NOCLIP_FRONTEND_URL=$NOCLIP_FRONTEND_URL
 
-COPY package.json ./
-RUN npm ci --platform=linux --libc=musl
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install
 
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 FROM nginx:alpine
 
