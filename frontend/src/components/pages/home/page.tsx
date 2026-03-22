@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router';
-import { useCreatePrivateRoom } from '@/hooks/useLobby';
 import { Button } from '@/components/ui/Button';
 import { GalaxyBackground } from '@/components/background/GalaxyBackground';
 import InfoBar from '@/components/ui/InfoBar';
@@ -9,7 +8,17 @@ import { useState } from 'react';
 
 export function HomePage() {
   const navigate = useNavigate();
-  const createPrivate = useCreatePrivateRoom();
+
+  // Placeholder function
+  const createPrivate = {
+    mutateAsync: async ({ playerId }: { playerId?: string }) => {
+      console.log('Placeholder createPrivate function', playerId);
+      return {
+        id: 1,
+      };
+    },
+    isPending: false,
+  };
   const [pseudo, setPseudo] = useState<string>('');
 
   const handleCreatePrivate = async () => {
@@ -22,7 +31,7 @@ export function HomePage() {
       return;
     }
     try {
-      const room = (await createPrivate.mutateAsync({})) ?? 1;
+      const room = await createPrivate.mutateAsync({ playerId: pseudo });
 
       navigate(`/room/${room.id}`);
     } catch (e) {

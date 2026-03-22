@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 import { useParams } from 'react-router';
-import { useGame } from '@/contexts/game/GameContext';
 import { GamePhase } from '@/types';
 import GameHUD from './components/GameHUD';
 import PlaceholderPanel from './components/PlaceholderPanel';
@@ -17,7 +16,16 @@ import PlaceholderPanel from './components/PlaceholderPanel';
 export function GamePage() {
   const { roomId } = useParams<{ roomId: string }>();
   console.log({ roomId });
-  const { round, timeRemaining, currentPhase } = useGame();
+
+  // Note : placeholder for now
+  const { round, timeRemaining, currentPhase } = {
+    round: {
+      roundNumber: 2,
+      totalRounds: 5,
+    },
+    timeRemaining: 300,
+    currentPhase: GamePhase.GUESSING_GAME,
+  };
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeUrl = import.meta.env.NOCLIP_FRONTEND_URL || 'http://localhost:8000';
 

@@ -1,8 +1,6 @@
 import { useParams, useNavigate } from 'react-router';
 import { useEffect } from 'react';
-import { useRoom, useStartMatch } from '@/hooks/useLobby';
-import { useGame } from '@/contexts/game/GameContext';
-import { useWebSocket } from '@/hooks/useWebSocket';
+
 import { Button } from '@/components/ui/Button';
 import { GamePhase } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,10 +14,25 @@ export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: room, isLoading } = useRoom(roomId!);
 
-  const startMatch = useStartMatch(roomId!);
-  const { connectToRoom, currentPhase } = useGame();
+  // Note: placeholder data
+  const { room, isLoading } = {
+    room: { id: 1, players: [{ userId: '1', username: 'Pseudo', isHost: false }], hostId: '1' },
+    isLoading: false,
+  };
+
+  const startMatch = {
+    isPending: false,
+    mutateAsync: async () => {
+      console.log('Start match palceholder');
+    },
+  };
+  const { connectToRoom, currentPhase } = {
+    connectToRoom: (roomId: string) => {
+      console.log('connectToRoom Placeholder', roomId);
+    },
+    currentPhase: GamePhase.GUESSING_GAME,
+  };
 
   // Connect to WebSocket when we enter the room
   useEffect(() => {
@@ -32,11 +45,6 @@ export function RoomPage() {
       navigate(`/game/${roomId}`);
     }
   }, [currentPhase, navigate, roomId]);
-
-  // Also listen to the raw WS event as a fallback
-  useWebSocket('MATCH_STARTED', () => {
-    navigate(`/game/${roomId}`);
-  });
 
   if (!roomId) {
     navigate(`/home/`);
