@@ -20,7 +20,7 @@ public interface GameUseCase {
      * @param hostId   the userId of the player starting the match
      * @return the newly started {@link Match}
      */
-    Match startMatch(String roomCode, String hostId);
+    Match startMatch(String roomCode, String hostId, List<String> playerIds);
 
     /**
      * Returns the current round for a given room.

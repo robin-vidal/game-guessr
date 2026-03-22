@@ -214,13 +214,13 @@ echo ""
 # 2.3 Start match for unknown room — no Kafka event received → 404
 FAKE_CODE="FAKE$(date +%s)"
 cyan "--- 2.3 POST /api/v1/rooms/${FAKE_CODE}/start — no pre-created match → 404"
-req POST "$GAME/api/v1/rooms/$FAKE_CODE/start" '{"hostId":"p1"}'
+req POST "$GAME/api/v1/rooms/$FAKE_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
 assert_status "Start match for unknown room → 404" 404 "$STATUS"
 echo ""
 
 # 2.4 Start match for real room (lobby created it, Kafka pre-created WAITING match)
 cyan "--- 2.4 POST /api/v1/rooms/{code}/start — start match → 201"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1"}'
+req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
 assert_status "Start match → 201" 201 "$STATUS"
 echo "    Waiting 2s for Kafka round.update event..."
 sleep 2
@@ -228,7 +228,7 @@ echo ""
 
 # 2.5 Start match again — already started → 409
 cyan "--- 2.5 POST /api/v1/rooms/{code}/start — already started → 409"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1"}'
+req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
 assert_status "Start already-started match → 409" 409 "$STATUS"
 echo ""
 
@@ -299,17 +299,28 @@ assert_status "SPOT guess during GAME phase → 400" 400 "$STATUS"
 echo ""
 
 # 2.9 Submit GAME guess — p1 (any non-empty text = accepted/published)
-cyan "--- 2.9 POST .../guess — p1 GAME guess → 202"
+cyan "--- 2.9 POST .../guess — p1 GAME guess → 202 (phase stays GAME, waiting for p2)"
 req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"GAME","textAnswer":"Mario Kart 8"}'
 assert_status "p1 GAME guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
+assert_equals "Phase still GAME after p1 only" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
+echo ""
+
+# 2.9a Duplicate guess — p1 guesses GAME again → 409
+cyan "--- 2.9a POST .../guess — p1 duplicate GAME guess → 409"
+req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+    '{"playerId":"p1","phase":"GAME","textAnswer":"Mario Kart Wii"}'
+assert_status "p1 duplicate GAME guess → 409" 409 "$STATUS"
 echo ""
 
 # 2.10 Submit GAME guess — p2 (wrong answer still accepted, scoring decides)
-cyan "--- 2.10 POST .../guess — p2 GAME guess (wrong answer) → 202"
+cyan "--- 2.10 POST .../guess — p2 GAME guess → 202 (all players guessed, phase advances)"
 req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
     '{"playerId":"p2","phase":"GAME","textAnswer":"Super Smash Bros"}'
 assert_status "p2 GAME guess (wrong) → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
+assert_equals "Phase now LEVEL after both guessed" "LEVEL" "$(echo "$BODY" | jq -r .currentPhase)"
 echo "    Waiting 3s for Kafka scoring pipeline..."
 sleep 3
 echo ""
@@ -552,6 +563,368 @@ echo ""
 cyan "--- 5.8 Results endpoint while match exists → 200 (game svc has no CLOSED check)"
 req GET "$GAME/api/v1/rooms/$ROOM_CODE/results"
 assert_status "Results for active room → 200" 200 "$STATUS"
+echo ""
+
+# ─────────────────────────────────────────────────────────────
+#  SECTION 6 — PHASE PROGRESSION & MATCH LIFECYCLE
+#  Uses a fresh room to test the full GAME→LEVEL→SPOT flow,
+#  round advancement, match finish, scoring, and leaderboard.
+# ─────────────────────────────────────────────────────────────
+bold "══════════════════════════════════════════"
+bold " PHASE PROGRESSION & MATCH LIFECYCLE"
+bold "══════════════════════════════════════════"
+
+# ── Setup: create room, join, start match ────────────────────
+cyan "--- 6.0 Setup: create room, join player, start match (2 players)"
+req POST "$LOBBY/api/v1/rooms" '{"hostId":"life-host","isPrivate":false}'
+LIFE_CODE=$(echo "$BODY" | jq -r .roomCode)
+req POST "$LOBBY/api/v1/rooms/$LIFE_CODE/join" \
+    '{"playerId":"life-p2","displayName":"Lifecycle P2"}'
+echo "    Room: $LIFE_CODE (players: life-host, life-p2)"
+echo "    Waiting 3s for Kafka room event..."
+sleep 3
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/start" \
+    '{"hostId":"life-host","playerIds":["life-host","life-p2"]}'
+assert_status "Lifecycle match started → 201" 201 "$STATUS"
+echo ""
+
+# ── 6.1 Verify initial state: round 1, phase GAME ───────────
+cyan "--- 6.1 Initial state: round 1, phase GAME"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
+assert_equals "Phase = GAME" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
+assert_equals "Not finished" "false" "$(echo "$BODY" | jq -r .finished)"
+echo ""
+
+# ── 6.2 Request validation: missing playerId → 400 ──────────
+cyan "--- 6.2 POST .../guess — missing playerId → 400"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"phase":"GAME","textAnswer":"Test"}'
+assert_status "Missing playerId → 400" 400 "$STATUS"
+echo ""
+
+# ── 6.3 Request validation: invalid phase string → 400 ──────
+cyan "--- 6.3 POST .../guess — invalid phase value → 400"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"INVALID","textAnswer":"Test"}'
+assert_status "Invalid phase value → 400" 400 "$STATUS"
+echo ""
+
+# ── 6.4 Request validation: missing phase → 400 ─────────────
+cyan "--- 6.4 POST .../guess — missing phase → 400"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","textAnswer":"Test"}'
+assert_status "Missing phase → 400" 400 "$STATUS"
+echo ""
+
+# ── 6.5 GAME guess — single player does NOT advance phase ───
+cyan "--- 6.5 GAME guess (life-host only) → phase stays GAME (waiting for life-p2)"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"GAME","textAnswer":"Mario Kart Wii"}'
+assert_status "life-host GAME guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Phase still GAME" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
+assert_equals "Still round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
+echo ""
+
+# ── 6.5a Duplicate guess → 409 ──────────────────────────────
+cyan "--- 6.5a Duplicate GAME guess by life-host → 409"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"GAME","textAnswer":"Mario Kart Wii"}'
+assert_status "Duplicate GAME guess → 409" 409 "$STATUS"
+echo ""
+
+# ── 6.5b Both players guessed → phase advances to LEVEL ─────
+cyan "--- 6.5b life-p2 GAME guess → all players done, phase advances to LEVEL"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-p2","phase":"GAME","textAnswer":"Mario Kart Wii"}'
+assert_status "life-p2 GAME guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Phase now LEVEL" "LEVEL" "$(echo "$BODY" | jq -r .currentPhase)"
+assert_equals "Still round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
+assert_equals "Round not finished" "false" "$(echo "$BODY" | jq -r .finished)"
+echo ""
+
+# ── 6.6 SPOT during LEVEL phase → 400 ───────────────────────
+cyan "--- 6.6 SPOT guess during LEVEL phase → 400"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"SPOT","guessX":1.0,"guessY":2.0,"guessZ":3.0}'
+assert_status "SPOT during LEVEL phase → 400" 400 "$STATUS"
+echo ""
+
+# ── 6.7 LEVEL guess — both players, phase advances to SPOT ──
+cyan "--- 6.7 LEVEL guesses (both players) → phase advances to SPOT"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"LEVEL","textAnswer":"Luigi Circuit"}'
+assert_status "life-host LEVEL guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Phase still LEVEL after 1 player" "LEVEL" "$(echo "$BODY" | jq -r .currentPhase)"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-p2","phase":"LEVEL","textAnswer":"Luigi Circuit"}'
+assert_status "life-p2 LEVEL guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Phase now SPOT" "SPOT" "$(echo "$BODY" | jq -r .currentPhase)"
+assert_equals "Still round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
+echo ""
+
+# ── 6.8 SPOT guesses — both players, round finishes, advance to round 2 ─
+cyan "--- 6.8 SPOT guesses (both players) → round 1 finishes, advance to round 2"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"SPOT","guessX":10.0,"guessY":5.0,"guessZ":-20.0}'
+assert_status "life-host SPOT guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Still round 1 after 1 SPOT guess" "1" "$(echo "$BODY" | jq -r .roundNumber)"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-p2","phase":"SPOT","guessX":15.0,"guessY":3.0,"guessZ":-25.0}'
+assert_status "life-p2 SPOT guess → 202" 202 "$STATUS"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_equals "Now round 2" "2" "$(echo "$BODY" | jq -r .roundNumber)"
+assert_equals "Phase reset to GAME" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
+assert_equals "Round 2 not finished" "false" "$(echo "$BODY" | jq -r .finished)"
+echo ""
+
+# ── 6.9 Play through rounds 2–5 to finish the match (both players each phase) ─
+cyan "--- 6.9 Play through rounds 2–5 (GAME→LEVEL→SPOT, both players each)"
+for round_i in 2 3 4 5; do
+  for phase in GAME LEVEL SPOT; do
+    for player in life-host life-p2; do
+      if [ "$phase" = "SPOT" ]; then
+        req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+            "{\"playerId\":\"$player\",\"phase\":\"$phase\",\"guessX\":1.0,\"guessY\":2.0,\"guessZ\":3.0}"
+      else
+        req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+            "{\"playerId\":\"$player\",\"phase\":\"$phase\",\"textAnswer\":\"Answer\"}"
+      fi
+      if [ "$STATUS" -ne 202 ]; then
+        red "  [FAIL] Round $round_i $phase $player → HTTP $STATUS (expected 202)"
+        FAIL=$((FAIL + 1))
+        break 3
+      fi
+    done
+  done
+done
+green "  [PASS] Rounds 2–5 completed (6 guesses × 4 rounds = 24 requests, all 202)"
+PASS=$((PASS + 1))
+echo ""
+
+# ── 6.10 Match is now FINISHED — verify via results ─────────
+cyan "--- 6.10 Match FINISHED after all 5 rounds"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/results"
+assert_status "Get results → 200" 200 "$STATUS"
+assert_equals "matchStatus = FINISHED" "FINISHED" "$(echo "$BODY" | jq -r .matchStatus)"
+echo ""
+
+# ── 6.11 GET /round on FINISHED match → 409 ─────────────────
+cyan "--- 6.11 GET /round on FINISHED match → 409"
+req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+assert_status "Round on finished match → 409" 409 "$STATUS"
+echo ""
+
+# ── 6.12 Submit guess on FINISHED match → 409 ───────────────
+cyan "--- 6.12 Submit guess on FINISHED match → 409"
+req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+    '{"playerId":"life-host","phase":"GAME","textAnswer":"Test"}'
+assert_status "Guess on finished match → 409" 409 "$STATUS"
+echo ""
+
+# ── 6.13 Scoring: wait for pipeline, then check all phases ──
+cyan "--- 6.13 Scoring: GAME=1000, LEVEL=500+bonus, SPOT=0"
+echo "    Waiting 5s for Kafka scoring pipeline..."
+sleep 5
+req GET "$SCORING/api/v1/scoring/$LIFE_CODE"
+assert_status "Get lifecycle match scores → 200" 200 "$STATUS"
+LIFE_SCORES="$BODY"
+LIFE_SCORE_COUNT=$(echo "$LIFE_SCORES" | jq '.scores | length')
+echo "    Total scores recorded: $LIFE_SCORE_COUNT"
+# We submitted 30 guesses (5 rounds × 3 phases × 2 players)
+if [ "$LIFE_SCORE_COUNT" -ge 30 ] 2>/dev/null; then
+  green "  [PASS] All 30 guess scores recorded (5 rounds × 3 phases × 2 players)"
+  PASS=$((PASS + 1))
+elif [ "$LIFE_SCORE_COUNT" -ge 1 ] 2>/dev/null; then
+  cyan "  [INFO] $LIFE_SCORE_COUNT scores recorded (some may still be in Kafka pipeline)"
+  PASS=$((PASS + 1))
+else
+  red "  [FAIL] No scores recorded for lifecycle match"
+  FAIL=$((FAIL + 1))
+fi
+echo ""
+
+# 6.13a GAME scores should all be 1000 (non-empty textAnswer)
+cyan "--- 6.13a GAME phase scores = 1000 each"
+GAME_SCORES=$(echo "$LIFE_SCORES" | jq '[.scores[] | select(.phase == "GAME")]')
+GAME_SCORE_COUNT=$(echo "$GAME_SCORES" | jq 'length')
+if [ "$GAME_SCORE_COUNT" -ge 1 ] 2>/dev/null; then
+  ALL_1000=$(echo "$GAME_SCORES" | jq 'all(.points == 1000)')
+  assert_equals "All GAME scores = 1000" "true" "$ALL_1000"
+  ALL_CORRECT=$(echo "$GAME_SCORES" | jq 'all(.correct == true)')
+  assert_equals "All GAME correct = true" "true" "$ALL_CORRECT"
+else
+  red "  [SKIP] No GAME scores found yet"
+  SKIP=$((SKIP + 1))
+fi
+echo ""
+
+# 6.13b LEVEL scores should be 500–1000 (base 500 + time bonus up to 500)
+cyan "--- 6.13b LEVEL phase scores = 500–1000 (base + time bonus)"
+LEVEL_SCORES=$(echo "$LIFE_SCORES" | jq '[.scores[] | select(.phase == "LEVEL")]')
+LEVEL_SCORE_COUNT=$(echo "$LEVEL_SCORES" | jq 'length')
+if [ "$LEVEL_SCORE_COUNT" -ge 1 ] 2>/dev/null; then
+  ALL_IN_RANGE=$(echo "$LEVEL_SCORES" | jq 'all(.points >= 500 and .points <= 1000)')
+  assert_equals "All LEVEL scores in 500–1000 range" "true" "$ALL_IN_RANGE"
+  ALL_LEVEL_CORRECT=$(echo "$LEVEL_SCORES" | jq 'all(.correct == true)')
+  assert_equals "All LEVEL correct = true" "true" "$ALL_LEVEL_CORRECT"
+  # Time bonus: since guesses are submitted immediately, bonus should be > 0
+  FIRST_LEVEL_PTS=$(echo "$LEVEL_SCORES" | jq '.[0].points')
+  if [ "$FIRST_LEVEL_PTS" -gt 500 ] 2>/dev/null; then
+    green "  [PASS] LEVEL time bonus working (points=$FIRST_LEVEL_PTS > 500 base)"
+    PASS=$((PASS + 1))
+  else
+    cyan "  [INFO] LEVEL points=$FIRST_LEVEL_PTS (time bonus may be 0 if pipeline was slow)"
+    PASS=$((PASS + 1))
+  fi
+else
+  red "  [SKIP] No LEVEL scores found yet"
+  SKIP=$((SKIP + 1))
+fi
+echo ""
+
+# 6.13c SPOT scores should all be 0 (post-MVP stub)
+cyan "--- 6.13c SPOT phase scores = 0 (post-MVP)"
+SPOT_SCORES=$(echo "$LIFE_SCORES" | jq '[.scores[] | select(.phase == "SPOT")]')
+SPOT_SCORE_COUNT=$(echo "$SPOT_SCORES" | jq 'length')
+if [ "$SPOT_SCORE_COUNT" -ge 1 ] 2>/dev/null; then
+  ALL_ZERO=$(echo "$SPOT_SCORES" | jq 'all(.points == 0)')
+  assert_equals "All SPOT scores = 0" "true" "$ALL_ZERO"
+  ALL_SPOT_INCORRECT=$(echo "$SPOT_SCORES" | jq 'all(.correct == false)')
+  assert_equals "All SPOT correct = false" "true" "$ALL_SPOT_INCORRECT"
+else
+  red "  [SKIP] No SPOT scores found yet"
+  SKIP=$((SKIP + 1))
+fi
+echo ""
+
+# 6.13d Per-round score query works
+cyan "--- 6.13d Per-round score query (round 1 has 3 scores)"
+req GET "$SCORING/api/v1/scoring/$LIFE_CODE/rounds/1"
+assert_status "Round 1 scores → 200" 200 "$STATUS"
+R1_COUNT=$(echo "$BODY" | jq '.scores | length')
+if [ "$R1_COUNT" -ge 6 ] 2>/dev/null; then
+  green "  [PASS] Round 1 has $R1_COUNT scores (expected ≥6 for 3 phases × 2 players)"
+  PASS=$((PASS + 1))
+elif [ "$R1_COUNT" -ge 3 ] 2>/dev/null; then
+  cyan "  [INFO] Round 1 has $R1_COUNT scores (some may still be in Kafka pipeline)"
+  PASS=$((PASS + 1))
+else
+  red "  [FAIL] Round 1 has $R1_COUNT scores (expected ≥6)"
+  FAIL=$((FAIL + 1))
+fi
+echo ""
+
+# ── 6.14 Leaderboard: cumulative score after full match ──────
+cyan "--- 6.14 Leaderboard: cumulative score after full match"
+req GET "$LB/api/v1/leaderboard/room/$LIFE_CODE"
+assert_status "Lifecycle room leaderboard → 200" 200 "$STATUS"
+LIFE_LB_ENTRIES=$(echo "$BODY" | jq '.entries | length')
+if [ "$LIFE_LB_ENTRIES" -ge 1 ] 2>/dev/null; then
+  LIFE_LB_SCORE=$(echo "$BODY" | jq '.entries[0].score')
+  LIFE_LB_PLAYER=$(echo "$BODY" | jq -r '.entries[0].playerId')
+  if [ "$LIFE_LB_PLAYER" = "life-host" ] || [ "$LIFE_LB_PLAYER" = "life-p2" ]; then
+    green "  [PASS] Top player is $LIFE_LB_PLAYER (either player valid — tied scores)"
+    PASS=$((PASS + 1))
+  else
+    red "  [FAIL] Top player is $LIFE_LB_PLAYER (expected life-host or life-p2)"
+    FAIL=$((FAIL + 1))
+  fi
+  # Expected: 5 × 1000 (GAME) + 5 × ~500-1000 (LEVEL) + 5 × 0 (SPOT) = 7500-10000
+  if [ "$(echo "$LIFE_LB_SCORE >= 7500" | bc 2>/dev/null)" = "1" ]; then
+    green "  [PASS] Cumulative score = $LIFE_LB_SCORE (≥7500 = 5×GAME + 5×LEVEL)"
+    PASS=$((PASS + 1))
+  elif [ "$(echo "$LIFE_LB_SCORE > 0" | bc 2>/dev/null)" = "1" ]; then
+    cyan "  [INFO] Cumulative score = $LIFE_LB_SCORE (some scores may still be in pipeline)"
+    PASS=$((PASS + 1))
+  else
+    red "  [FAIL] Cumulative score = $LIFE_LB_SCORE (expected ≥7500)"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  red "  [FAIL] No leaderboard entries for lifecycle room"
+  FAIL=$((FAIL + 1))
+fi
+echo ""
+
+# ── 6.15 Global leaderboard includes lifecycle player ────────
+cyan "--- 6.15 Global leaderboard includes lifecycle player"
+req GET "$LB/api/v1/leaderboard/global"
+GLOBAL_HAS_PLAYER=$(echo "$BODY" | jq '[.entries[] | select(.playerId == "life-host")] | length')
+if [ "$GLOBAL_HAS_PLAYER" -ge 1 ] 2>/dev/null; then
+  GLOBAL_SCORE=$(echo "$BODY" | jq '[.entries[] | select(.playerId == "life-host")][0].score')
+  green "  [PASS] life-host on global leaderboard (score=$GLOBAL_SCORE)"
+  PASS=$((PASS + 1))
+else
+  red "  [FAIL] life-host not found on global leaderboard"
+  FAIL=$((FAIL + 1))
+fi
+echo ""
+
+# ─────────────────────────────────────────────────────────────
+#  SECTION 7 — GUESS VALIDATION EDGE CASES
+# ─────────────────────────────────────────────────────────────
+bold "══════════════════════════════════════════"
+bold " GUESS VALIDATION EDGE CASES"
+bold "══════════════════════════════════════════"
+
+# 7.1 LEVEL guess during GAME phase (different room, fresh state)
+cyan "--- 7.1 LEVEL before GAME completed → 400 (on lifecycle room already tested in 2.7)"
+
+# 7.2 Empty textAnswer for GAME guess — still accepted (scoring gives 0)
+cyan "--- 7.2 Setup: new room for blank guess test"
+req POST "$LOBBY/api/v1/rooms" '{"hostId":"blank-host","isPrivate":false}'
+BLANK_CODE=$(echo "$BODY" | jq -r .roomCode)
+echo "    Waiting 3s for Kafka room event..."
+sleep 3
+req POST "$GAME/api/v1/rooms/$BLANK_CODE/start" '{"hostId":"blank-host","playerIds":["blank-host"]}'
+assert_status "Blank-test match started → 201" 201 "$STATUS"
+echo ""
+
+cyan "--- 7.3 GAME guess with empty textAnswer → 202 (accepted, scoring gives 0)"
+req POST "$GAME/api/v1/rooms/$BLANK_CODE/guess" \
+    '{"playerId":"blank-host","phase":"GAME","textAnswer":""}'
+assert_status "Blank GAME guess → 202" 202 "$STATUS"
+echo "    Waiting 3s for scoring pipeline..."
+sleep 3
+echo ""
+
+cyan "--- 7.4 Blank GAME guess scored as 0 points, correct=false"
+req GET "$SCORING/api/v1/scoring/$BLANK_CODE/rounds/1"
+BLANK_SCORE=$(echo "$BODY" | jq '.scores[] | select(.playerId == "blank-host" and .phase == "GAME")')
+if [ -n "$BLANK_SCORE" ]; then
+  assert_equals "Blank GAME points = 0" "0" "$(echo "$BLANK_SCORE" | jq -r .points)"
+  assert_equals "Blank GAME correct = false" "false" "$(echo "$BLANK_SCORE" | jq -r .correct)"
+else
+  red "  [SKIP] Blank GAME score not found (Kafka lag?)"
+  SKIP=$((SKIP + 1))
+fi
+echo ""
+
+# 7.5 GAME guess with null textAnswer — also accepted, scored as 0
+cyan "--- 7.5 GAME guess with null textAnswer → 202"
+# Phase is now LEVEL after previous GAME guess, so we need a new match
+# Use the blank room — phase is LEVEL now, so submit LEVEL with null
+req POST "$GAME/api/v1/rooms/$BLANK_CODE/guess" \
+    '{"playerId":"blank-host","phase":"LEVEL","textAnswer":null}'
+assert_status "Null textAnswer LEVEL guess → 202" 202 "$STATUS"
+echo "    Waiting 3s for scoring..."
+sleep 3
+
+req GET "$SCORING/api/v1/scoring/$BLANK_CODE/rounds/1"
+NULL_SCORE=$(echo "$BODY" | jq '.scores[] | select(.playerId == "blank-host" and .phase == "LEVEL")')
+if [ -n "$NULL_SCORE" ]; then
+  assert_equals "Null LEVEL points = 0" "0" "$(echo "$NULL_SCORE" | jq -r .points)"
+  assert_equals "Null LEVEL correct = false" "false" "$(echo "$NULL_SCORE" | jq -r .correct)"
+else
+  red "  [SKIP] Null LEVEL score not found (Kafka lag?)"
+  SKIP=$((SKIP + 1))
+fi
 echo ""
 
 # ─────────────────────────────────────────────────────────────

@@ -12,8 +12,12 @@ import com.gameguessr.game.infrastructure.persistence.repository.MatchJpaReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -45,6 +49,7 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .hostId(match.getHostId())
                 .gamePack(match.getGamePack())
                 .status(match.getStatus().name())
+                .playerIdsCsv(match.getPlayerIds() != null ? String.join(",", match.getPlayerIds()) : "")
                 .currentRoundIndex(match.getCurrentRoundIndex())
                 .build();
 
@@ -69,6 +74,8 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .currentPhase(round.getCurrentPhase().name())
                 .finished(round.isFinished())
                 .startedAt(round.getStartedAt())
+                .guessedPlayerIdsCsv(round.getPhaseGuessedPlayerIds() != null
+                        ? String.join(",", round.getPhaseGuessedPlayerIds()) : "")
                 .build();
     }
 
@@ -77,10 +84,15 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .map(this::roundToDomain)
                 .toList();
 
+        List<String> playerIds = (entity.getPlayerIdsCsv() != null && !entity.getPlayerIdsCsv().isEmpty())
+                ? Arrays.asList(entity.getPlayerIdsCsv().split(","))
+                : List.of();
+
         return Match.builder()
                 .id(entity.getId())
                 .roomCode(entity.getRoomCode())
                 .hostId(entity.getHostId())
+                .playerIds(playerIds)
                 .gamePack(entity.getGamePack())
                 .status(MatchStatus.valueOf(entity.getStatus()))
                 .currentRoundIndex(entity.getCurrentRoundIndex())
@@ -89,6 +101,10 @@ public class MatchRepositoryAdapter implements MatchRepository {
     }
 
     private Round roundToDomain(RoundEntity entity) {
+        Set<String> guessedPlayerIds = (entity.getGuessedPlayerIdsCsv() != null && !entity.getGuessedPlayerIdsCsv().isEmpty())
+                ? Arrays.stream(entity.getGuessedPlayerIdsCsv().split(",")).collect(Collectors.toSet())
+                : new HashSet<>();
+
         return Round.builder()
                 .id(entity.getId())
                 .roundNumber(entity.getRoundNumber())
@@ -102,6 +118,7 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 .currentPhase(GuessPhase.valueOf(entity.getCurrentPhase()))
                 .finished(entity.isFinished())
                 .startedAt(entity.getStartedAt())
+                .phaseGuessedPlayerIds(guessedPlayerIds)
                 .build();
     }
 }

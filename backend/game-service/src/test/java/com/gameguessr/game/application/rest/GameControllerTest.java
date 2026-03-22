@@ -47,10 +47,11 @@ class GameControllerTest {
         @DisplayName("POST /start — 201 when match started successfully")
         void startMatch_returns201() throws Exception {
                 Match match = buildInProgressMatch();
-                when(gameUseCase.startMatch(eq(ROOM_CODE), any())).thenReturn(match);
+                when(gameUseCase.startMatch(eq(ROOM_CODE), any(), any())).thenReturn(match);
 
                 StartMatchRequest req = new StartMatchRequest();
                 req.setHostId("host-1");
+                req.setPlayerIds(List.of("host-1", "player-2"));
 
                 mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -63,6 +64,7 @@ class GameControllerTest {
         void startMatch_blankHostId_returns400() throws Exception {
                 StartMatchRequest req = new StartMatchRequest();
                 req.setHostId("");
+                req.setPlayerIds(List.of("player-1"));
 
                 mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -150,11 +152,12 @@ class GameControllerTest {
         @Test
         @DisplayName("POST /start — 409 when match already started")
         void startMatch_alreadyStarted_returns409() throws Exception {
-                when(gameUseCase.startMatch(eq(ROOM_CODE), any()))
+                when(gameUseCase.startMatch(eq(ROOM_CODE), any(), any()))
                                 .thenThrow(new com.gameguessr.game.domain.exception.MatchAlreadyStartedException(ROOM_CODE));
 
                 StartMatchRequest req = new StartMatchRequest();
                 req.setHostId("host-1");
+                req.setPlayerIds(List.of("host-1"));
 
                 mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -211,6 +214,7 @@ class GameControllerTest {
                                 .id(UUID.randomUUID())
                                 .roomCode(ROOM_CODE)
                                 .hostId("host-1")
+                                .playerIds(List.of("host-1", "player-2"))
                                 .gamePack("mario-kart-wii")
                                 .status(MatchStatus.IN_PROGRESS)
                                 .rounds(List.of(buildRound(1, GuessPhase.GAME)))

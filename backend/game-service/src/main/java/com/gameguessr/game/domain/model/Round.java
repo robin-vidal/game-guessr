@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -31,4 +33,8 @@ public class Round {
 
     /** Timestamp (epoch ms) when this round started — used to compute time bonuses. */
     private final long startedAt;
+
+    /** Player IDs who have submitted a guess for the current phase. */
+    @Builder.Default
+    private final Set<String> phaseGuessedPlayerIds = new HashSet<>();
 }
