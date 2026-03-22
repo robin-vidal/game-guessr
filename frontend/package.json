@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write src/",
-    "generate:api": "openapi-typescript http://localhost:8083/v3/api-docs -o src/api/lobby.types.ts && openapi-typescript http://localhost:8082/v3/api-docs -o src/api/game.types.ts"
+    "generate:types": "openapi-typescript http://localhost:8082/api-docs -o src/types/game-service.ts && openapi-typescript http://localhost:8083/api-docs -o src/types/lobby-service.ts && openapi-typescript http://localhost:8084/api-docs -o src/types/scoring-service.ts && openapi-typescript http://localhost:8085/api-docs -o src/types/leaderboard-service.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",

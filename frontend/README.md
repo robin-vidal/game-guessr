@@ -10,7 +10,7 @@ React + TypeScript + Vite frontend for the GameGuessr multiplayer game.
 | Bundler       | Vite 8                                  |
 | Routing       | React Router v7                         |
 | UI Components | shadcn/ui + Tailwind CSS v4             |
-| Server state  | TanStack Query v5 + Axios               |
+| Server state  | TanStack Query v5 + openapi-fetch       |
 | Client state  | React Context + useReducer              |
 | Real-time     | Native WebSocket (custom hook)          |
 | 3D background | Three.js                                |
@@ -54,20 +54,20 @@ src/
 │   ├── pages/
 │   │   ├── game/
 │   │   │   ├── components/
-│   │   │   │   ├── GameHUD.tsx         # Round counter, phase label, timer
+│   │   │   │   ├── GameHUD.tsx           # Round counter, phase label, timer
 │   │   │   │   └── PlaceholderPanel.tsx  # Stub panel for guess phases
-│   │   │   └── page.tsx                # Main gameplay view (iframe + HUD + panels)
+│   │   │   └── page.tsx                  # Main gameplay view (iframe + HUD + panels)
 │   │   ├── home/
-│   │   │   └── page.tsx                # Landing page with 3D background
+│   │   │   └── page.tsx                  # Landing page with 3D background
 │   │   ├── lobby/
-│   │   │   └── page.tsx                # Public matchmaking / room creation
+│   │   │   └── page.tsx                  # Public matchmaking / room creation
 │   │   ├── notFound/
-│   │   │   └── page.tsx                # 404 page
+│   │   │   └── page.tsx                  # 404 page
 │   │   ├── results/
-│   │   │   └── page.tsx                # End-of-match leaderboard
+│   │   │   └── page.tsx                  # End-of-match leaderboard
 │   │   └── room/
-│   │       └── page.tsx                # Pre-game lobby (player list, host controls)
-│   └── ui/                             # Shared UI components
+│   │       └── page.tsx                  # Pre-game lobby (player list, host controls)
+│   └── ui/                               # Shared UI components
 │       ├── Button.tsx
 │       ├── Container.tsx
 │       ├── InfoBar.tsx
@@ -75,36 +75,96 @@ src/
 │       ├── Paper.tsx
 │       ├── Tag.tsx
 │       ├── Title.tsx
-│       └── sonner.tsx                  # Toast notifications
+│       └── sonner.tsx                    # Toast notifications
 ├── contexts/
 │   └── auth/
-│       ├── AuthContext.tsx             # React context object
-│       └── AuthProvider.tsx           # OAuth flow, JWT, user state (reducer + provider)
+│       ├── AuthContext.tsx               # React context object
+│       └── AuthProvider.tsx             # OAuth flow, JWT, user state (reducer + provider)
 ├── hooks/
-│   └── useAuth.ts                      # Consumes AuthContext
+│   └── useAuth.ts                        # Consumes AuthContext
 ├── lib/
-│   ├── api-client.ts                   # Axios instance (Gateway) with JWT interceptor
-│   ├── noclip-bridge.ts                # postMessage abstraction (ADR 0004)
-│   ├── ws-client.ts                    # WebSocket singleton with auto-reconnect
-│   └── utils.ts                        # cn() Tailwind helper
+│   ├── clients.ts                        # openapi-fetch clients per service
+│   ├── api-client.ts                     # Axios instance (Gateway) with JWT interceptor
+│   ├── noclip-bridge.ts                  # postMessage abstraction (ADR 0004)
+│   ├── ws-client.ts                      # WebSocket singleton with auto-reconnect
+│   └── utils.ts                          # cn() Tailwind helper
 ├── router/
-│   ├── AppRouter.tsx                   # Route definitions
-│   └── ProtectedRoute.tsx              # Auth guard
+│   ├── AppRouter.tsx                     # Route definitions
+│   └── ProtectedRoute.tsx                # Auth guard
 ├── types/
-│   └── index.ts                        # All shared TypeScript types + Kafka event contracts
-├── App.tsx                             # Provider composition
-├── main.tsx                            # React root
-└── index.css                           # Tailwind v4 imports + CSS variables
+│   ├── index.ts                          # Auth, WS events, GamePhase — not generated
+│   ├── game-service.ts                   # Auto-generated from game-service OpenAPI
+│   ├── lobby-service.ts                  # Auto-generated from lobby-service OpenAPI
+│   ├── scoring-service.ts                # Auto-generated from scoring-service OpenAPI
+│   └── leaderboard-service.ts            # Auto-generated from leaderboard-service OpenAPI
+├── App.tsx                               # Provider composition
+├── main.tsx                              # React root
+└── index.css                             # Tailwind v4 imports + CSS variables
 ```
 
 ## Environment variables
 
-| Variable                  | Description                                                 |
-| ------------------------- | ----------------------------------------------------------- |
-| `VITE_API_BASE_URL`       | Gateway Service base URL                                    |
-| `VITE_WS_BASE_URL`        | WebSocket Sync Service URL                                  |
-| `VITE_OAUTH_REDIRECT_URL` | Authentik OAuth2 authorization URL                          |
-| `NOCLIP_FRONTEND_URL`     | Noclip frontend URL (injected at build time via Docker ARG) |
+| Variable                       | Description                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `VITE_API_BASE_URL`            | Gateway Service base URL                                      |
+| `VITE_WS_BASE_URL`             | WebSocket Sync Service URL                                    |
+| `VITE_OAUTH_REDIRECT_URL`      | Authentik OAuth2 authorization URL                            |
+| `VITE_GAME_SERVICE_URL`        | game-service base URL (default: http://localhost:8082)        |
+| `VITE_LOBBY_SERVICE_URL`       | lobby-service base URL (default: http://localhost:8083)       |
+| `VITE_SCORING_SERVICE_URL`     | scoring-service base URL (default: http://localhost:8084)     |
+| `VITE_LEADERBOARD_SERVICE_URL` | leaderboard-service base URL (default: http://localhost:8085) |
+| `NOCLIP_FRONTEND_URL`          | Noclip frontend URL (injected at build time via Docker ARG)   |
+
+## Backend type generation
+
+Types for all backend DTOs are auto-generated from the OpenAPI specs exposed by each Spring Boot service. **Never write these types by hand.**
+
+### How it works
+
+Each service exposes its OpenAPI spec at `/api-docs`. The `generate:types` script calls `openapi-typescript` against each one and writes the result to `src/types/`.
+
+### Regenerate types
+
+With all backend services running locally:
+
+```bash
+npm run generate:types
+```
+
+This runs:
+
+```
+openapi-typescript http://localhost:8082/api-docs -o src/types/game-service.ts
+openapi-typescript http://localhost:8083/api-docs -o src/types/lobby-service.ts
+openapi-typescript http://localhost:8084/api-docs -o src/types/scoring-service.ts
+openapi-typescript http://localhost:8085/api-docs -o src/types/leaderboard-service.ts
+```
+
+### Using generated types in code
+
+Use `openapi-fetch` clients from `src/lib/clients.ts` — they are fully typed against the generated specs:
+
+```ts
+import { gameClient } from '@/lib/clients';
+
+const { data, error } = await gameClient.POST('/api/v1/rooms/{code}/guess', {
+  params: { path: { code: roomCode } },
+  body: { playerId, phase: 'GAME', textAnswer: 'Mario Kart 8' },
+});
+```
+
+TypeScript will infer the correct request body shape and response type directly from the Java DTOs. If a backend field changes and you regenerate, the compiler will highlight every broken call site.
+
+### What is NOT generated
+
+The following live in `src/types/index.ts` and are maintained manually because they have no corresponding backend OpenAPI spec:
+
+| Type                                    | Reason                                                   |
+| --------------------------------------- | -------------------------------------------------------- |
+| `GamePhase`                             | Frontend-only enum for UI state machine                  |
+| `AuthState`, `AuthContextValue`, `User` | Auth service has no OpenAPI spec yet                     |
+| `RoundState`                            | Client-side derived state, not a direct backend response |
+| `WsEvent`, `WsEventType`, `*Payload`    | WebSocket service has no OpenAPI spec yet                |
 
 ## Architecture notes
 
@@ -127,7 +187,7 @@ Typed event payloads are defined in `src/types/index.ts` and match the Kafka eve
 
 ### State management
 
-- **Server state** (rooms, users, scores): TanStack Query
+- **Server state** (rooms, users, scores): TanStack Query + openapi-fetch
 - **Real-time game state** (round, phase, timer): `GameContext` reducer, fed by WebSocket events
 - **Auth state**: `AuthContext` / `AuthProvider` reducer
 
@@ -135,7 +195,7 @@ Typed event payloads are defined in `src/types/index.ts` and match the Kafka eve
 
 `GalaxyBackground` wraps a Three.js canvas (gradient sky shader + CSS-animated star divs) and a `Planet` component (orthographic camera + procedural noise-based texture). It accepts `children` so any page can layer UI on top of it.
 
-### What's left to implement (stubs)
+## What's left to implement (stubs)
 
 | File                                         | Epic   | What to build                                                            |
 | -------------------------------------------- | ------ | ------------------------------------------------------------------------ |
@@ -146,7 +206,7 @@ Typed event payloads are defined in `src/types/index.ts` and match the Kafka eve
 | `contexts/game/`                             | D      | `GameContext` + `GameProvider` (imported in App.tsx but not yet created) |
 | `hooks/useWebSocket.ts`                      | D      | Subscribe to WS events with auto-cleanup                                 |
 | `hooks/useNoclipBridge.ts`                   | C1     | Attach/use the noclip iframe bridge                                      |
-| `hooks/useLobby.ts`                          | B      | TanStack Query hooks for room API                                        |
-| `hooks/useGuess.ts`                          | C      | Guess submission mutations                                               |
+| `hooks/useLobby.ts`                          | B      | TanStack Query hooks wrapping lobbyClient                                |
+| `hooks/useGuess.ts`                          | C      | Guess submission mutations wrapping gameClient                           |
 | `features/leaderboard/`                      | C5, F3 | Friends leaderboard                                                      |
 | `pages/room/page.tsx` — settings UI          | B5     | Host room settings panel                                                 |

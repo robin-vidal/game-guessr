@@ -1,4 +1,9 @@
 import axios from 'axios';
+import createClient from 'openapi-fetch';
+import type { paths as GamePaths } from '@/types/game-service';
+import type { paths as LobbyPaths } from '@/types/lobby-service';
+import type { paths as ScoringPaths } from '@/types/scoring-service';
+import type { paths as LeaderboardPaths } from '@/types/leaderboard-service';
 
 /**
  * Pre-configured Axios instance pointing at the Gateway Service.
@@ -37,3 +42,19 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const gameClient = createClient<GamePaths>({
+  baseUrl: import.meta.env.VITE_GAME_SERVICE_URL ?? 'http://localhost:8082',
+});
+
+export const lobbyClient = createClient<LobbyPaths>({
+  baseUrl: import.meta.env.VITE_LOBBY_SERVICE_URL ?? 'http://localhost:8083',
+});
+
+export const scoringClient = createClient<ScoringPaths>({
+  baseUrl: import.meta.env.VITE_SCORING_SERVICE_URL ?? 'http://localhost:8084',
+});
+
+export const leaderboardClient = createClient<LeaderboardPaths>({
+  baseUrl: import.meta.env.VITE_LEADERBOARD_SERVICE_URL ?? 'http://localhost:8085',
+});
