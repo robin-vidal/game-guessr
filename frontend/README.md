@@ -10,7 +10,7 @@ React + TypeScript + Vite frontend for the GameGuessr multiplayer game.
 | Bundler       | Vite 8                                  |
 | Routing       | React Router v7                         |
 | UI Components | shadcn/ui + Tailwind CSS v4             |
-| Server state  | TanStack Query v5 + openapi-fetch       |
+| Server state  | TanStack Query v5 + Hey API             |
 | Client state  | React Context + useReducer              |
 | Real-time     | Native WebSocket (custom hook)          |
 | 3D background | Three.js                                |
@@ -47,6 +47,11 @@ npx shadcn-ui@latest add badge
 
 ```
 src/
+├── client/
+│   ├── game-service/         # Auto-generated: SDK + TanStack hooks for game-service
+│   ├── lobby-service/        # Auto-generated: SDK + TanStack hooks for lobby-service
+│   ├── scoring-service/      # Auto-generated: SDK + TanStack hooks for scoring-service
+│   └── leaderboard-service/  # Auto-generated: SDK + TanStack hooks for leaderboard-service
 ├── components/
 │   ├── background/
 │   │   ├── GalaxyBackground.tsx  # Three.js scene wrapper (starfield + gradient sky)
@@ -83,7 +88,7 @@ src/
 ├── hooks/
 │   └── useAuth.ts                        # Consumes AuthContext
 ├── lib/
-│   ├── clients.ts                        # openapi-fetch clients per service
+│   ├── clients.ts                        # Hey API client instances per service
 │   ├── api-client.ts                     # Axios instance (Gateway) with JWT interceptor
 │   ├── noclip-bridge.ts                  # postMessage abstraction (ADR 0004)
 │   ├── ws-client.ts                      # WebSocket singleton with auto-reconnect
@@ -92,11 +97,7 @@ src/
 │   ├── AppRouter.tsx                     # Route definitions
 │   └── ProtectedRoute.tsx                # Auth guard
 ├── types/
-│   ├── index.ts                          # Auth, WS events, GamePhase — not generated
-│   ├── game-service.ts                   # Auto-generated from game-service OpenAPI
-│   ├── lobby-service.ts                  # Auto-generated from lobby-service OpenAPI
-│   ├── scoring-service.ts                # Auto-generated from scoring-service OpenAPI
-│   └── leaderboard-service.ts            # Auto-generated from leaderboard-service OpenAPI
+│   └── index.ts                          # Auth, WS events, GamePhase — not generated
 ├── App.tsx                               # Provider composition
 ├── main.tsx                              # React root
 └── index.css                             # Tailwind v4 imports + CSS variables
@@ -115,42 +116,61 @@ src/
 | `VITE_LEADERBOARD_SERVICE_URL` | leaderboard-service base URL (default: http://localhost:8085) |
 | `NOCLIP_FRONTEND_URL`          | Noclip frontend URL (injected at build time via Docker ARG)   |
 
-## Backend type generation
+## Backend client generation
 
-Types for all backend DTOs are auto-generated from the OpenAPI specs exposed by each Spring Boot service. **Never write these types by hand.**
+All API clients, TypeScript types, and TanStack Query hooks are auto-generated from the OpenAPI specs exposed by each Spring Boot service using [Hey API](https://heyapi.dev). **Never write these by hand.**
 
 ### How it works
 
-Each service exposes its OpenAPI spec at `/api-docs`. The `generate:types` script calls `openapi-typescript` against each one and writes the result to `src/types/`.
+Each service exposes its OpenAPI spec at `/api-docs`. The `openapi-ts` script reads `openapi-ts.config.ts` and generates a full typed client (types + SDK functions + TanStack Query hooks) for each service into `src/client/<service-name>/`.
 
-### Regenerate types
+The config reads service URLs from your `.env` file via `dotenv`, so no hardcoded ports.
+
+### Regenerate clients
 
 With all backend services running locally:
 
 ```bash
-npm run generate:types
+npm run openapi-ts
 ```
 
-This runs:
+This reads `openapi-ts.config.ts` and generates all services clients in one pass.
 
+> ⚠️ Treat the `src/client/` folders as build artifacts — never edit them directly. Changes will be overwritten on the next generation run.
+
+### Using generated hooks in code
+
+Each service client exports ready-to-use TanStack Query hooks:
+
+```ts
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { getRoomsOptions, createRoomMutation } from '@/client/lobby-service';
+
+// Query
+function RoomList() {
+  const { data, isPending } = useQuery(getRoomsOptions());
+  return <div>{data?.map(room => <p key={room.id}>{room.name}</p>)}</div>;
+}
+
+// Mutation
+function CreateRoom() {
+  const { mutate, isPending } = useMutation(createRoomMutation());
+
+  return (
+    <button onClick={() => mutate({ body: { name: 'My Room', maxPlayers: 4 } })} disabled={isPending}>
+      Create Room
+    </button>
+  );
+}
 ```
-openapi-typescript http://localhost:8082/api-docs -o src/types/game-service.ts
-openapi-typescript http://localhost:8083/api-docs -o src/types/lobby-service.ts
-openapi-typescript http://localhost:8084/api-docs -o src/types/scoring-service.ts
-openapi-typescript http://localhost:8085/api-docs -o src/types/leaderboard-service.ts
-```
 
-### Using generated types in code
-
-Use `openapi-fetch` clients from `src/lib/clients.ts` — they are fully typed against the generated specs:
+Each service has its own configured client in `src/lib/clients.ts`. Pass it explicitly if you need to override the default (e.g. for auth headers):
 
 ```ts
 import { gameClient } from '@/lib/clients';
+import { getGameOptions } from '@/client/game-service';
 
-const { data, error } = await gameClient.POST('/api/v1/rooms/{code}/guess', {
-  params: { path: { code: roomCode } },
-  body: { playerId, phase: 'GAME', textAnswer: 'Mario Kart 8' },
-});
+const { data } = useQuery(getGameOptions({ client: gameClient }));
 ```
 
 TypeScript will infer the correct request body shape and response type directly from the Java DTOs. If a backend field changes and you regenerate, the compiler will highlight every broken call site.
@@ -187,7 +207,7 @@ Typed event payloads are defined in `src/types/index.ts` and match the Kafka eve
 
 ### State management
 
-- **Server state** (rooms, users, scores): TanStack Query + openapi-fetch
+- **Server state** (rooms, users, scores): TanStack Query + Hey API generated hooks
 - **Real-time game state** (round, phase, timer): `GameContext` reducer, fed by WebSocket events
 - **Auth state**: `AuthContext` / `AuthProvider` reducer
 
@@ -206,7 +226,7 @@ Typed event payloads are defined in `src/types/index.ts` and match the Kafka eve
 | `contexts/game/`                             | D      | `GameContext` + `GameProvider` (imported in App.tsx but not yet created) |
 | `hooks/useWebSocket.ts`                      | D      | Subscribe to WS events with auto-cleanup                                 |
 | `hooks/useNoclipBridge.ts`                   | C1     | Attach/use the noclip iframe bridge                                      |
-| `hooks/useLobby.ts`                          | B      | TanStack Query hooks wrapping lobbyClient                                |
-| `hooks/useGuess.ts`                          | C      | Guess submission mutations wrapping gameClient                           |
+| `hooks/useLobby.ts`                          | B      | TanStack Query hooks wrapping lobby-service client                       |
+| `hooks/useGuess.ts`                          | C      | Guess submission mutations wrapping game-service client                  |
 | `features/leaderboard/`                      | C5, F3 | Friends leaderboard                                                      |
 | `pages/room/page.tsx` — settings UI          | B5     | Host room settings panel                                                 |
