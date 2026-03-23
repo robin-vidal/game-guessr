@@ -11,4 +11,8 @@ resource "google_container_cluster" "main" {
   # Delete the default node pool — not applicable for Autopilot but required for the
   # resource block to be valid; Autopilot manages nodes automatically.
   deletion_protection = false
+
+  gateway_api_config {
+    channel = "CHANNEL_STANDARD"
+  }
 }

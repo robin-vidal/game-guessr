@@ -56,16 +56,12 @@ dist/
 .nuxt/
 
 # ── Terraform ─────────────────────────────────────────────────────────────
-**/.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars
-!*.tfvars.example
-backend.hcl
-!backend.hcl.example
-crash.log
-override.tf
-override.tf.json
+infra/terraform/.terraform
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform.tfvars
+infra/terraform/backend.hcl
 
 # ── Misc ──────────────────────────────────────────────────────────────────
 *.swp
