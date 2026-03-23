@@ -55,6 +55,18 @@ dist/
 .next/
 .nuxt/
 
+# ── Terraform ─────────────────────────────────────────────────────────────
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+crash.log
+override.tf
+override.tf.json
+
 # ── Misc ──────────────────────────────────────────────────────────────────
 *.swp
 *.swo
