@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-guessr-frontend
+  namespace: game-guessr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-guessr-frontend
+  template:
+    metadata:
+      labels:
+        app: game-guessr-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: ghcr.io/robin-vidal/game-guessr/frontend:latest
+        ports:
+        - containerPort: 80

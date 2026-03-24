@@ -1,0 +1,108 @@
+name: Deploy to Kubernetes
+
+on:
+  # Triggered after a successful Build & Push on develop or main
+  workflow_run:
+    workflows: ["Build & Push"]
+    types: [completed]
+    branches: [main, develop]
+  # Also triggered when k8s manifests change directly
+  push:
+    branches: [main, develop]
+    paths:
+      - 'infra/k8s/**'
+
+jobs:
+  deploy-dev:
+    name: Deploy → Dev
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
+    if: |
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'develop') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          location: ${{ secrets.GKE_CLUSTER_LOCATION }}
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Update image tags
+        if: github.event_name == 'workflow_run'
+        working-directory: infra/k8s/overlays/dev
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          REPO_LC="${GITHUB_REPOSITORY,,}"
+          SHORT="${HEAD_SHA:0:7}"
+          kustomize edit set image \
+            ghcr.io/${REPO_LC}/frontend=ghcr.io/${REPO_LC}/frontend:sha-${SHORT}-dev
+
+      - name: Apply dev manifests
+        run: kustomize build infra/k8s/overlays/dev | kubectl apply -f -
+
+  deploy-prod:
+    name: Deploy → Prod
+    runs-on: ubuntu-latest
+    environment: prod
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: true
+    if: |
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          location: ${{ secrets.GKE_CLUSTER_LOCATION }}
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Update image tags
+        if: github.event_name == 'workflow_run'
+        working-directory: infra/k8s/overlays/prod
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          REPO_LC="${GITHUB_REPOSITORY,,}"
+          SHORT="${HEAD_SHA:0:7}"
+          kustomize edit set image \
+            ghcr.io/${REPO_LC}/frontend=ghcr.io/${REPO_LC}/frontend:sha-${SHORT}
+
+      - name: Apply prod manifests
+        run: kustomize build infra/k8s/overlays/prod | kubectl apply -f -
