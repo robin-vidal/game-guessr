@@ -26,7 +26,7 @@ class AuthApplicationServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private TokenService tokenService;
+    private com.gameguessr.auth.domain.port.outbound.TokenService tokenService;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -54,16 +54,15 @@ class AuthApplicationServiceTest {
                 .build();
 
         when(userRepository.existsByUsername(USERNAME)).thenReturn(false);
-        when(tokenService.encodePassword(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(tokenService.createUser(USERNAME, ENCODED_PASSWORD)).thenReturn(createdUser);
-        when(userRepository.save(createdUser)).thenReturn(createdUser);
+        when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
+        when(userRepository.save(any(User.class))).thenReturn(createdUser);
 
         User result = authService.register(USERNAME, RAW_PASSWORD);
 
         assertThat(result.getUsername()).isEqualTo(USERNAME);
         assertThat(result.getPassword()).isEqualTo(ENCODED_PASSWORD);
         assertThat(result.getId()).isNotNull();
-        verify(userRepository).save(createdUser);
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -88,13 +87,12 @@ class AuthApplicationServiceTest {
                 .build();
 
         when(userRepository.existsByUsername(USERNAME)).thenReturn(false);
-        when(tokenService.encodePassword(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(tokenService.createUser(USERNAME, ENCODED_PASSWORD)).thenReturn(createdUser);
-        when(userRepository.save(createdUser)).thenReturn(createdUser);
+        when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
+        when(userRepository.save(any(User.class))).thenReturn(createdUser);
 
         authService.register(USERNAME, RAW_PASSWORD);
 
-        verify(tokenService).encodePassword(RAW_PASSWORD);
+        verify(passwordEncoder).encode(RAW_PASSWORD);
     }
 
     // ── login ────────────────────────────────────────────────────────
@@ -110,8 +108,8 @@ class AuthApplicationServiceTest {
         String expectedToken = "jwt.token.here";
 
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
-        when(tokenService.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
-        when(tokenService.generateTokenForUser(user)).thenReturn(expectedToken);
+        when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
+        when(tokenService.generateToken(USERNAME)).thenReturn(expectedToken);
 
         String token = authService.login(USERNAME, RAW_PASSWORD);
 
@@ -127,7 +125,7 @@ class AuthApplicationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid credentials");
 
-        verify(tokenService, never()).generateTokenForUser(any());
+        verify(tokenService, never()).generateToken(any());
     }
 
     @Test
@@ -140,13 +138,13 @@ class AuthApplicationServiceTest {
                 .build();
 
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
-        when(tokenService.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(false);
+        when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(false);
 
         assertThatThrownBy(() -> authService.login(USERNAME, RAW_PASSWORD))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid credentials");
 
-        verify(tokenService, never()).generateTokenForUser(any());
+        verify(tokenService, never()).generateToken(any());
     }
 
     @Test
@@ -160,12 +158,12 @@ class AuthApplicationServiceTest {
         String token = "jwt.token.here";
 
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
-        when(tokenService.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
-        when(tokenService.generateTokenForUser(user)).thenReturn(token);
+        when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
+        when(tokenService.generateToken(USERNAME)).thenReturn(token);
 
         authService.login(USERNAME, RAW_PASSWORD);
 
-        verify(tokenService).matches(RAW_PASSWORD, ENCODED_PASSWORD);
+        verify(passwordEncoder).matches(RAW_PASSWORD, ENCODED_PASSWORD);
     }
 
     // ── logout ──────────────────────────────────────────────────────

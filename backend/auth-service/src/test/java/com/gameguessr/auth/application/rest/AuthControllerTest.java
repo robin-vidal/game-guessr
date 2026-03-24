@@ -5,8 +5,8 @@ import com.gameguessr.auth.application.rest.dto.LoginRequest;
 import com.gameguessr.auth.application.rest.dto.RegisterRequest;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.inbound.AuthUseCase;
-import com.gameguessr.auth.domain.port.outbound.TokenBlacklist;
 import com.gameguessr.auth.domain.port.outbound.TokenService;
+import com.gameguessr.auth.infrastructure.security.TokenValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ class AuthControllerTest {
     private UserDetailsService userDetailsService;
 
     @MockitoBean
-    private TokenBlacklist tokenBlacklist;
+    private TokenValidator tokenValidator;
 
     private static final String USERNAME = "testuser";
     private static final String PASSWORD = "password123";
@@ -194,20 +194,20 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /logout — 204 with missing authorization header")
-    void logout_missingAuthHeader_returns204() throws Exception {
+    @DisplayName("POST /logout — 401 with missing authorization header")
+    void logout_missingAuthHeader_returns401() throws Exception {
         mockMvc.perform(post("/api/auth/logout"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isUnauthorized());
 
         verify(authUseCase, never()).logout(any());
     }
 
     @Test
-    @DisplayName("POST /logout — 204 with invalid authorization format")
-    void logout_invalidAuthFormat_returns204() throws Exception {
+    @DisplayName("POST /logout — 401 with invalid authorization format")
+    void logout_invalidAuthFormat_returns401() throws Exception {
         mockMvc.perform(post("/api/auth/logout")
                         .header("Authorization", "InvalidFormat token"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isUnauthorized());
 
         verify(authUseCase, never()).logout(any());
     }

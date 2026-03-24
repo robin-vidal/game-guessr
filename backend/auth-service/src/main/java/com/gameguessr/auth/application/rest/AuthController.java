@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -69,7 +70,7 @@ public class AuthController {
     })
     public void logout(@RequestHeader(value = "Authorization", required = false) String authorization) {
         if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
-            return;
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid authorization header");
         }
 
         String token = authorization.substring(BEARER_PREFIX.length());

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class InMemoryTokenBlacklist implements TokenBlacklist {
+public class InMemoryTokenBlacklist implements TokenBlacklist, TokenValidator {
 
     private final Map<String, Long> blacklistedTokens = new ConcurrentHashMap<>();
 

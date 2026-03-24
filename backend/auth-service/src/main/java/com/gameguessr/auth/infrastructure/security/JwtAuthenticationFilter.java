@@ -1,6 +1,5 @@
 package com.gameguessr.auth.infrastructure.security;
 
-import com.gameguessr.auth.domain.port.outbound.TokenBlacklist;
 import com.gameguessr.auth.domain.port.outbound.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
-    private final TokenBlacklist tokenBlacklist;
+    private final TokenValidator tokenValidator;
 
     @Override
     protected void doFilterInternal(
@@ -44,15 +43,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(BEARER_PREFIX.length());
 
-        if (tokenBlacklist.isInvalidated(token)) {
+        if (tokenValidator.isInvalidated(token)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (!tokenService.isTokenValid(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String username = tokenService.extractUsername(token);
 

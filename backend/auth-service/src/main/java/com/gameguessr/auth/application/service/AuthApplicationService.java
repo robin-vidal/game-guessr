@@ -1,11 +1,12 @@
 package com.gameguessr.auth.application.service;
 
-import com.gameguessr.auth.application.service.TokenService;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.inbound.AuthUseCase;
 import com.gameguessr.auth.domain.port.outbound.TokenBlacklist;
+import com.gameguessr.auth.domain.port.outbound.TokenService;
 import com.gameguessr.auth.domain.port.outbound.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class AuthApplicationService implements AuthUseCase {
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final TokenBlacklist tokenBlacklist;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -24,8 +26,11 @@ public class AuthApplicationService implements AuthUseCase {
             throw new IllegalArgumentException("Username already exists: " + username);
         }
 
-        String encodedPassword = tokenService.encodePassword(password);
-        User user = tokenService.createUser(username, encodedPassword);
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = User.builder()
+                .username(username)
+                .password(encodedPassword)
+                .build();
         return userRepository.save(user);
     }
 
@@ -34,11 +39,11 @@ public class AuthApplicationService implements AuthUseCase {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
-        if (!tokenService.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        return tokenService.generateTokenForUser(user);
+        return tokenService.generateToken(user.getUsername());
     }
 
     @Override
