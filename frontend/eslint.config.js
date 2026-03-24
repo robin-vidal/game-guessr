@@ -30,6 +30,7 @@ export default defineConfig([
         version: 'detect',
       },
     },
+    ignores: ['src/client/**/*.ts'],
     rules: {
       ...react.configs.recommended.rules,
       'react/jsx-uses-react': 'error',
