@@ -5,7 +5,7 @@ WORKDIR /app
 ARG NOCLIP_FRONTEND_URL=http://localhost:8000
 ENV NOCLIP_FRONTEND_URL=$NOCLIP_FRONTEND_URL
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 RUN corepack enable pnpm && pnpm install
 
 COPY . .
