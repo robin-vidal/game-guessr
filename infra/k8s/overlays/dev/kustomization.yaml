@@ -8,7 +8,15 @@ resources:
   - ../../base
 
 patches:
-  - path: gateway-patch.yaml
+  - path: gateway-gateway-patch.yaml
     target:
       kind: Gateway
       name: game-guessr-gke-gateway
+  - path: frontend-deployment-patch.yaml
+    target:
+      kind: Deployment
+      name: game-guessr-frontend
+  - path: frontend-httproute-patch.yaml
+    target:
+      kind: HTTPRoute
+      name: game-guessr-frontend
