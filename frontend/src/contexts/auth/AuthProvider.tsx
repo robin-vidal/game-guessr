@@ -1,7 +1,6 @@
-import { AuthAction, AuthState, User } from '@/types';
+import { AuthAction, AuthState } from '@/types';
 import { ReactNode, useCallback, useEffect, useReducer } from 'react';
 import { AuthContext } from './AuthContext';
-import { apiClient } from '@/lib/api-client';
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
@@ -50,8 +49,12 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const fetchCurrentUser = useCallback(async () => {
     dispatch({ type: 'AUTH_LOADING' });
     try {
-      const { data } = await apiClient.get<User>('/auth/me');
-      dispatch({ type: 'AUTH_SUCCESS', payload: data });
+       // To implement
+      dispatch({ type: 'AUTH_SUCCESS', payload: {
+        username: "Tmp username",
+        id: "1",
+        displayName: "Tmp  displayName"
+      } });
     } catch {
       localStorage.removeItem(TOKEN_KEY);
       dispatch({ type: 'AUTH_FAILURE' });
@@ -66,7 +69,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
 
   const logout = useCallback(async () => {
     try {
-      await apiClient.post('/auth/logout');
+      // To implement
     } finally {
       localStorage.removeItem(TOKEN_KEY);
       dispatch({ type: 'LOGOUT' });

@@ -5,20 +5,13 @@ import InfoBar from '@/components/ui/InfoBar';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { createRoomMutation } from '@/client/lobby-service/@tanstack/react-query.gen';
+import { useMutation } from '@tanstack/react-query';
 
 export function HomePage() {
   const navigate = useNavigate();
-
-  // Placeholder function
-  const createPrivate = {
-    mutateAsync: async ({ playerId }: { playerId?: string }) => {
-      console.log('Placeholder createPrivate function', playerId);
-      return {
-        id: 1,
-      };
-    },
-    isPending: false,
-  };
+  const { mutateAsync: createRoom, isPending } = useMutation(createRoomMutation());
+  
   const [pseudo, setPseudo] = useState<string>('');
 
   const handleCreatePrivate = async () => {
@@ -31,9 +24,8 @@ export function HomePage() {
       return;
     }
     try {
-      const room = await createPrivate.mutateAsync({ playerId: pseudo });
-
-      navigate(`/room/${room.id}`);
+      const room = await createRoom({body: {hostId: pseudo, isPrivate: false} })
+      navigate(`/room/${room.roomCode}`);
     } catch (e) {
       console.log({ e });
       toast('Échec de création de la salle', { position: 'top-left' });
@@ -72,14 +64,16 @@ export function HomePage() {
             onChange={(e) => setPseudo(e.target.value ?? '')}
             id="input-demo-api-key"
             placeholder="CoolName"
+            disabled={isPending}
           />
         }
         actions={
           <Button
             size="lg"
             onClick={handleCreatePrivate}
-            disabled={createPrivate.isPending}
+            disabled={isPending}
             variant={'default'}
+
           >
             Démarrer
           </Button>
