@@ -1,0 +1,30 @@
+image:
+  tag: "16"
+
+auth:
+  username: gameuser
+  database: gamedb
+  existingSecret: postgres-secret
+  secretKeys:
+    adminPasswordKey: postgres-password
+    userPasswordKey: password
+
+primary:
+  initdb:
+    scripts:
+      init-dbs.sh: |
+        #!/bin/bash
+        set -e
+        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+          CREATE DATABASE scoringdb;
+          GRANT ALL PRIVILEGES ON DATABASE scoringdb TO $POSTGRES_USER;
+        EOSQL
+  persistence:
+    enabled: true
+    size: 2Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi

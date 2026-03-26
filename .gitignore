@@ -63,6 +63,9 @@ infra/terraform/.terraform.lock.hcl
 infra/terraform/terraform.tfvars
 infra/terraform/backend.hcl
 
+# ── Kubernetes / Helm ─────────────────────────────────────────────────────
+infra/k8s/**/charts/
+
 # ── Misc ──────────────────────────────────────────────────────────────────
 *.swp
 *.swo
