@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Response for {@code GET /api/v1/rooms/{code}/round}.
+ * Response for {@code GET /api/v1/games/{code}/round}.
  * Intentionally omits the true spawn coordinates.
  */
 @Data

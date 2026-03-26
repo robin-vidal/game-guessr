@@ -23,7 +23,7 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/rooms/{code}")
+@RequestMapping("/api/v1/games/{code}")
 @RequiredArgsConstructor
 @Tag(name = "Game", description = "Game lifecycle and guess submission endpoints")
 public class GameController {
