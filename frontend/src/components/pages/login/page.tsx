@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function LoginPage() {
-
   const navigate = useNavigate();
   const { user, isLoading, login } = useAuth();
 
