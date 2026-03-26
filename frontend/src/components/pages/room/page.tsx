@@ -2,64 +2,57 @@ import { useParams, useNavigate } from 'react-router';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/Button';
-import { GamePhase } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { GalaxyBackground } from '@/components/background/GalaxyBackground';
 import Paper from '@/components/ui/Paper';
 import { House, Copy } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { toast } from 'sonner';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getRoomOptions } from '@/client/lobby-service/@tanstack/react-query.gen';
+import { startMatchMutation } from '@/client/game-service/@tanstack/react-query.gen';
+import { defaultConfig } from '@/client/config';
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Note: placeholder data
-  const { room, isLoading } = {
-    room: { id: 1, players: [{ userId: '1', username: 'Pseudo', isHost: false }], hostId: '1' },
-    isLoading: false,
-  };
+  const { data: room, isPending } = useQuery(
+    getRoomOptions({ path: { code: roomId! }, ...defaultConfig })
+  );
 
-  const startMatch = {
-    isPending: false,
-    mutateAsync: async () => {
-      console.log('Start match palceholder');
-    },
-  };
-  const { connectToRoom, currentPhase } = {
-    connectToRoom: (roomId: string) => {
-      console.log('connectToRoom Placeholder', roomId);
-    },
-    currentPhase: GamePhase.GUESSING_GAME,
-  };
-
-  // Connect to WebSocket when we enter the room
-  useEffect(() => {
-    if (roomId) connectToRoom(roomId);
-  }, [roomId, connectToRoom]);
+  const { mutateAsync: startMatch, isPending: isStartMatchPending } =
+    useMutation(startMatchMutation());
 
   // Navigate to game when match starts
   useEffect(() => {
-    if (currentPhase && currentPhase !== GamePhase.WAITING) {
+    if (room?.status && room?.status != 'OPEN') {
       navigate(`/game/${roomId}`);
     }
-  }, [currentPhase, navigate, roomId]);
+  }, [room?.status, navigate, roomId]);
 
   if (!roomId) {
-    navigate(`/home/`);
+    navigate(`/`);
+    return;
   }
-  if (isLoading || !room) {
+  if (isPending) {
     return (
       <GalaxyBackground>
         <div className="flex h-screen items-center justify-center">
-          <span className="text-muted-foreground animate-pulse text-sm">Loading room…</span>
+          <span className="text-muted-foreground animate-pulse text-sm">
+            Chargement de la salle…
+          </span>
         </div>
       </GalaxyBackground>
     );
   }
 
-  console.log({ room });
+  if (!room) {
+    navigate(`/`);
+    return null;
+  }
+
   const isHost = room.hostId === user?.id;
   const inviteUrl = `${window.location.origin}/room/${roomId}`;
 
@@ -69,7 +62,15 @@ export function RoomPage() {
   };
 
   const onGameStart = async () => {
-    await startMatch.mutateAsync();
+    await startMatch({
+      body: {
+        hostId: room.hostId!,
+        playerIds: (room.players ?? []).map((p) => p.playerId ?? ''),
+      },
+      path: { code: roomId! },
+      ...defaultConfig,
+    });
+    navigate(`/game/${roomId}`);
   };
 
   return (
@@ -98,20 +99,19 @@ export function RoomPage() {
               {room?.players?.length ?? 0} joueur
               {(room?.players?.length ?? 0) == 1 ? '' : 's'} en ligne
             </p>
-            <ul
-              className="w-full max-w-xs divide-y divide-border rounded-lg border bg-card"
-              style={{ width: '100%' }}
-            >
+            <ul className="w-full divide-y divide-border rounded-lg border bg-card">
               {room?.players?.map((p) => (
-                <li key={p.userId} className="flex items-center justify-between px-4 py-3">
-                  <span className="font-medium">{p.username}</span>
-                  {p.isHost && <span className="text-xs text-muted-foreground">Host</span>}
+                <li key={p.playerId} className="flex items-center justify-between px-4 py-3">
+                  <span className="font-medium">{p.displayName}</span>
+                  {p.playerId == room.hostId && (
+                    <span className="text-xs text-muted-foreground">Hôte</span>
+                  )}
                 </li>
               ))}
             </ul>
             {!isHost && (
               <p className="text-muted-foreground text-sm animate-pulse">
-                Waiting for host to start…
+                {"En attente que l'hôte démarre…"}
               </p>
             )}
           </>
@@ -130,7 +130,7 @@ export function RoomPage() {
           </Button>
           <Button
             onClick={onGameStart}
-            disabled={startMatch?.isPending || (room?.players?.length ?? 0) < 1 || !isHost}
+            disabled={isStartMatchPending || (room?.players?.length ?? 0) < 1 || !isHost}
           >
             Démarrer
           </Button>

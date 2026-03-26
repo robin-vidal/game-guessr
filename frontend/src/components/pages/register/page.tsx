@@ -32,7 +32,7 @@ export function RegisterPage() {
     try {
       await register({ username, password });
 
-      navigate(`/`);
+      navigate(`/login`);
     } catch (e) {
       if ((e as { detail: string }).detail) {
         toast(`${(e as { detail: string }).detail}`, {
