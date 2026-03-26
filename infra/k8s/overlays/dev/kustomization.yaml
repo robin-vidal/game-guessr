@@ -6,6 +6,7 @@ nameSuffix: -dev
 
 resources:
   - ../../base
+  - infra/
 
 patches:
   - path: gateway-gateway-patch.yaml

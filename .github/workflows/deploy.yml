@@ -58,7 +58,7 @@ jobs:
             ghcr.io/${REPO_LC}/frontend=ghcr.io/${REPO_LC}/frontend:sha-${SHORT}-dev
 
       - name: Apply dev manifests
-        run: kustomize build infra/k8s/overlays/dev | kubectl apply -f -
+        run: kustomize build --enable-helm infra/k8s/overlays/dev | kubectl apply -f -
 
   deploy-prod:
     name: Deploy → Prod
@@ -105,4 +105,4 @@ jobs:
             ghcr.io/${REPO_LC}/frontend=ghcr.io/${REPO_LC}/frontend:sha-${SHORT}
 
       - name: Apply prod manifests
-        run: kustomize build infra/k8s/overlays/prod | kubectl apply -f -
+        run: kustomize build --enable-helm infra/k8s/overlays/prod | kubectl apply -f -
