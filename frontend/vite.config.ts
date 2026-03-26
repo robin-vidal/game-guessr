@@ -10,24 +10,24 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api/auth': {
-        target: process.env.VITE_AUTH_SERVICE_URL,
+        target: process.env.VITE_AUTH_SERVICE_URL ?? "http://localhost:8081",
         changeOrigin: true,
       },
       '/api/v1/game': {
-        target: process.env.VITE_GAME_SERVICE_URL,
+        target: process.env.VITE_GAME_SERVICE_URL ?? "http://localhost:8082",
         changeOrigin: true,
       },
       '/api/v1/rooms': {
-        target: process.env.VITE_LOBBY_SERVICE_URL,
+        target: process.env.VITE_LOBBY_SERVICE_URL ?? "http://localhost:8083",
         changeOrigin: true,
       },
       '/api/v1/scoring': {
-        target: process.env.VITE_SCORING_SERVICE_URL,
+        target: process.env.VITE_SCORING_SERVICE_URL ?? "http://localhost:8084",
         changeOrigin: true,
         secure: false,
       },
       '/api/v1/leaderboard': {
-        target: process.env.VITE_LEADERBOARD_SERVICE_URL,
+        target: process.env.VITE_LEADERBOARD_SERVICE_URL ?? "http://localhost:8085",
         changeOrigin: true,
         secure: false,
       },
