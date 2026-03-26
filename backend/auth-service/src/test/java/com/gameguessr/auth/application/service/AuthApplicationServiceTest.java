@@ -98,10 +98,11 @@ class AuthApplicationServiceTest {
     // ── login ────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("login — returns token for valid credentials")
-    void login_validCredentials_returnsToken() {
+    @DisplayName("login — returns user for valid credentials")
+    void login_validCredentials_returnsUser() {
+        UUID userId = UUID.randomUUID();
         User user = User.builder()
-                .id(UUID.randomUUID())
+                .id(userId)
                 .username(USERNAME)
                 .password(ENCODED_PASSWORD)
                 .build();
@@ -109,11 +110,12 @@ class AuthApplicationServiceTest {
 
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
-        when(tokenService.generateToken(USERNAME)).thenReturn(expectedToken);
+        when(tokenService.generateToken(userId, USERNAME)).thenReturn(expectedToken);
 
-        String token = authService.login(USERNAME, RAW_PASSWORD);
+        User result = authService.login(USERNAME, RAW_PASSWORD);
 
-        assertThat(token).isEqualTo(expectedToken);
+        assertThat(result.getId()).isEqualTo(userId);
+        assertThat(result.getUsername()).isEqualTo(USERNAME);
     }
 
     @Test
@@ -125,7 +127,7 @@ class AuthApplicationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid credentials");
 
-        verify(tokenService, never()).generateToken(any());
+        verify(tokenService, never()).generateToken(any(UUID.class), any());
     }
 
     @Test
@@ -144,14 +146,15 @@ class AuthApplicationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid credentials");
 
-        verify(tokenService, never()).generateToken(any());
+        verify(tokenService, never()).generateToken(any(UUID.class), any());
     }
 
     @Test
     @DisplayName("login — encodes password and compares")
     void login_comparesPasswords() {
+        UUID userId = UUID.randomUUID();
         User user = User.builder()
-                .id(UUID.randomUUID())
+                .id(userId)
                 .username(USERNAME)
                 .password(ENCODED_PASSWORD)
                 .build();
@@ -159,7 +162,7 @@ class AuthApplicationServiceTest {
 
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
-        when(tokenService.generateToken(USERNAME)).thenReturn(token);
+        when(tokenService.generateToken(userId, USERNAME)).thenReturn(token);
 
         authService.login(USERNAME, RAW_PASSWORD);
 

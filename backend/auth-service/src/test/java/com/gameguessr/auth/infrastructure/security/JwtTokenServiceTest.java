@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("JwtTokenService")
@@ -16,6 +18,7 @@ class JwtTokenServiceTest {
     private static final String SECRET = "test-secret-key-must-be-at-least-256-bits-long-for-hs256";
     private static final Long EXPIRATION = 86400000L;
     private static final String USERNAME = "testuser";
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
@@ -29,7 +32,7 @@ class JwtTokenServiceTest {
     @Test
     @DisplayName("generateToken — creates valid token for username")
     void generateToken_createsValidToken() {
-        String token = jwtTokenService.generateToken(USERNAME);
+        String token = jwtTokenService.generateToken(USER_ID, USERNAME);
 
         assertThat(token).isNotEmpty();
         assertThat(token.split("\\.")).hasSize(3);
@@ -38,7 +41,7 @@ class JwtTokenServiceTest {
     @Test
     @DisplayName("extractUsername — extracts username from valid token")
     void extractUsername_extractsFromValidToken() {
-        String token = jwtTokenService.generateToken(USERNAME);
+        String token = jwtTokenService.generateToken(USER_ID, USERNAME);
 
         String extractedUsername = jwtTokenService.extractUsername(token);
 
@@ -46,11 +49,21 @@ class JwtTokenServiceTest {
     }
 
     @Test
+    @DisplayName("extractUserId — extracts userId from valid token")
+    void extractUserId_extractsFromValidToken() {
+        String token = jwtTokenService.generateToken(USER_ID, USERNAME);
+
+        UUID extractedUserId = jwtTokenService.extractUserId(token);
+
+        assertThat(extractedUserId).isEqualTo(USER_ID);
+    }
+
+    @Test
     @DisplayName("generateToken — same username produces different tokens (timestamps)")
     void generateToken_sameUsername_producesDifferentTokens() throws InterruptedException {
-        String token1 = jwtTokenService.generateToken(USERNAME);
+        String token1 = jwtTokenService.generateToken(USER_ID, USERNAME);
         Thread.sleep(1000);
-        String token2 = jwtTokenService.generateToken(USERNAME);
+        String token2 = jwtTokenService.generateToken(USER_ID, USERNAME);
 
         assertThat(token1).isNotEqualTo(token2);
     }
@@ -58,8 +71,8 @@ class JwtTokenServiceTest {
     @Test
     @DisplayName("extractUsername — same username from different tokens")
     void extractUsername_differentTokens_sameUsername() {
-        String token1 = jwtTokenService.generateToken(USERNAME);
-        String token2 = jwtTokenService.generateToken(USERNAME);
+        String token1 = jwtTokenService.generateToken(USER_ID, USERNAME);
+        String token2 = jwtTokenService.generateToken(USER_ID, USERNAME);
 
         String username1 = jwtTokenService.extractUsername(token1);
         String username2 = jwtTokenService.extractUsername(token2);

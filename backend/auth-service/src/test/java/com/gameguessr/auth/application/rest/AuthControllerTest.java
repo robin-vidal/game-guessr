@@ -123,8 +123,16 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /login — 200 with token on valid credentials")
     void login_validCredentials_returns200() throws Exception {
+        UUID userId = UUID.randomUUID();
         String token = "jwt.token.here";
-        when(authUseCase.login(USERNAME, PASSWORD)).thenReturn(token);
+        User user = User.builder()
+                .id(userId)
+                .username(USERNAME)
+                .password("encodedPassword")
+                .build();
+
+        when(authUseCase.login(USERNAME, PASSWORD)).thenReturn(user);
+        when(tokenService.generateToken(userId, USERNAME)).thenReturn(token);
 
         LoginRequest req = new LoginRequest();
         req.setUsername(USERNAME);
@@ -134,6 +142,7 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.token").value(token));
     }
 

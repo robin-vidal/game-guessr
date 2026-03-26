@@ -5,6 +5,7 @@ import com.gameguessr.auth.application.rest.dto.LoginRequest;
 import com.gameguessr.auth.application.rest.dto.RegisterRequest;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.inbound.AuthUseCase;
+import com.gameguessr.auth.domain.port.outbound.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,7 @@ public class AuthController {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final AuthUseCase authUseCase;
+    private final TokenService tokenService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -53,10 +55,11 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        String token = authUseCase.login(request.getUsername(), request.getPassword());
+        User user = authUseCase.login(request.getUsername(), request.getPassword());
 
         AuthResponse response = AuthResponse.builder()
-                .token(token)
+                .id(user.getId())
+                .token(tokenService.generateToken(user.getId(), user.getUsername()))
                 .build();
 
         return ResponseEntity.ok(response);

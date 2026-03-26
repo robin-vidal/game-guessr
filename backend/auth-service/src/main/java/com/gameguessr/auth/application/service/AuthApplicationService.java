@@ -35,7 +35,7 @@ public class AuthApplicationService implements AuthUseCase {
     }
 
     @Override
-    public String login(String username, String password) {
+    public User login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
@@ -43,7 +43,8 @@ public class AuthApplicationService implements AuthUseCase {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        return tokenService.generateToken(user.getUsername());
+        tokenService.generateToken(user.getId(), user.getUsername());
+        return user;
     }
 
     @Override

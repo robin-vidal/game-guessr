@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtTokenService implements TokenService {
@@ -23,18 +24,20 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public String generateToken(String username) {
+    public String generateToken(UUID userId, String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getExpiration());
 
         return Jwts.builder()
                 .subject(username)
+                .claim("userId", userId.toString())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey)
                 .compact();
     }
 
+    @Override
     public String extractUsername(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
@@ -43,5 +46,16 @@ public class JwtTokenService implements TokenService {
                 .getPayload();
 
         return claims.getSubject();
+    }
+
+    @Override
+    public UUID extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return UUID.fromString(claims.get("userId", String.class));
     }
 }
