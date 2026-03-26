@@ -48,7 +48,7 @@ export interface AuthContextValue {
   logout: () => Promise<void>;
 }
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [user, setUser] = useState<AuthUser | null>(() => {
     // Lazy initializer: runs once synchronously before the first render.
     // No effect needed — avoids the cascading-render lint warning.
