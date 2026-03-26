@@ -8,6 +8,7 @@ import { getRoomOptions } from '@/client/lobby-service/@tanstack/react-query.gen
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import { getCurrentRoundOptions } from '@/client/game-service/@tanstack/react-query.gen';
 import GuessGameInput from './components/guess-inputs/GuessGameInput';
+import GuessLevelInput from './components/guess-inputs/GuessLevelInput';
 
 /**
  * GamePage wires together:
@@ -22,13 +23,24 @@ export function GamePage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
 
-  const { data: room, isPending: isGamePending } = useQuery(
-    getRoomOptions({ path: { code: roomId! }, ...defaultConfig })
-  );
+  const { data: room, isPending: isGamePending } = useQuery({
+    ...getRoomOptions({ path: { code: roomId! }, ...defaultConfig }),
+    refetchInterval: (query) => {
+      // Stop polling once the game is over
+      if (query.state.data?.status === 'CLOSED' || query.state.data?.status === 'FINISHED')
+        return false;
+      return 60 * 1000; // poll every minute
+    },
+  });
 
-  const { data: round, isPending: isRoundPending } = useQuery(
-    getCurrentRoundOptions({ path: { code: roomId! }, ...defaultConfig })
-  );
+  const { data: round, isPending: isRoundPending } = useQuery({
+    ...getCurrentRoundOptions({ path: { code: roomId! }, ...defaultConfig }),
+    refetchInterval: (query) => {
+      // Stop polling once the round is over
+      if (query.state.data?.currentPhase === null || query.state.data?.finished) return false;
+      return 2000; // poll every 2s
+    },
+  });
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -67,9 +79,9 @@ export function GamePage() {
           <PlaceholderPanel label="Phase 2" description="Place le point sur la carte" />
         )}
         {currentPhase === 'GAME' && <GuessGameInput roomId={roomId} />}
-        {currentPhase === 'LEVEL' && <GuessGameInput roomId={roomId} />}
+        {currentPhase === 'LEVEL' && <GuessLevelInput roomId={roomId} />}
 
-        {currentPhase === null && <PlaceholderPanel label="Error" description="Game not found" />}
+        {!currentPhase && <PlaceholderPanel label="Erreur" description="Partie non trouvée" />}
       </div>
     </div>
   );
