@@ -5,3 +5,4 @@ resources:
   - postgres/
   - pgadmin/
   - redis/
+  - kafka/
