@@ -6,13 +6,13 @@ Complete reference for frontend developers. All services expose a Swagger UI at 
 
 ## Service Map
 
-| Service          | Port | Base URL                        |
-|------------------|------|---------------------------------|
-| lobby-service    | 8083 | `http://localhost:8083/api/v1`  |
-| game-service     | 8082 | `http://localhost:8082/api/v1`  |
-| scoring-service  | 8084 | `http://localhost:8084/api/v1`  |
+| Service             | Port | Base URL                       |
+| ------------------- | ---- | ------------------------------ |
+| lobby-service       | 8083 | `http://localhost:8083/api/v1` |
+| game-service        | 8082 | `http://localhost:8082/api/v1` |
+| scoring-service     | 8084 | `http://localhost:8084/api/v1` |
 | leaderboard-service | 8085 | `http://localhost:8085/api/v1` |
-| noclip frontend  | 8000 | `http://localhost:8000`         |
+| noclip frontend     | 8000 | `http://localhost:8000`        |
 
 > No API gateway yet. Call each service directly.
 
@@ -41,6 +41,7 @@ POST http://localhost:8083/api/v1/rooms
 ```
 
 **Request body:**
+
 ```json
 {
   "hostId": "user-uuid-123",
@@ -49,6 +50,7 @@ POST http://localhost:8083/api/v1/rooms
 ```
 
 **Response `201`:**
+
 ```json
 {
   "roomCode": "ABC123",
@@ -81,7 +83,7 @@ GET http://localhost:8083/api/v1/rooms
 ### Get Room Details
 
 ```
-GET http://localhost:8083/api/v1/rooms/{code}
+GET http://localhost:8083/api/v1/games/{code}
 ```
 
 **Response `200`:** Room object including player list and current status.
@@ -92,10 +94,11 @@ GET http://localhost:8083/api/v1/rooms/{code}
 ### Join a Room
 
 ```
-POST http://localhost:8083/api/v1/rooms/{code}/join
+POST http://localhost:8083/api/v1/games/{code}/join
 ```
 
 **Request body:**
+
 ```json
 {
   "playerId": "user-uuid-456",
@@ -111,10 +114,11 @@ POST http://localhost:8083/api/v1/rooms/{code}/join
 ### Leave a Room
 
 ```
-DELETE http://localhost:8083/api/v1/rooms/{code}/leave
+DELETE http://localhost:8083/api/v1/games/{code}/leave
 ```
 
 **Request body:**
+
 ```json
 {
   "playerId": "user-uuid-456"
@@ -126,13 +130,14 @@ DELETE http://localhost:8083/api/v1/rooms/{code}/leave
 
 ---
 
-### Update Room Settings *(host only)*
+### Update Room Settings _(host only)_
 
 ```
-PATCH http://localhost:8083/api/v1/rooms/{code}/settings
+PATCH http://localhost:8083/api/v1/games/{code}/settings
 ```
 
 **Request body:**
+
 ```json
 {
   "playerId": "user-uuid-123",
@@ -151,13 +156,14 @@ All fields except `playerId` are optional — send only what you want to change.
 
 ## 2. Game — Match Lifecycle
 
-### Start a Match *(host only)*
+### Start a Match _(host only)_
 
 ```
-POST http://localhost:8082/api/v1/rooms/{code}/start
+POST http://localhost:8082/api/v1/games/{code}/start
 ```
 
 **Request body:**
+
 ```json
 {
   "hostId": "user-uuid-123"
@@ -174,10 +180,11 @@ POST http://localhost:8082/api/v1/rooms/{code}/start
 ### Get Current Round
 
 ```
-GET http://localhost:8082/api/v1/rooms/{code}/round
+GET http://localhost:8082/api/v1/games/{code}/round
 ```
 
 **Response `200`:**
+
 ```json
 {
   "roundNumber": 1,
@@ -190,6 +197,7 @@ GET http://localhost:8082/api/v1/rooms/{code}/round
 ```
 
 **Fields:**
+
 - `currentPhase`: `GAME` → `LEVEL` → `SPOT` (phases progress as players submit)
 - `startedAt`: epoch milliseconds — use for client-side countdown timer
 - `finished`: `true` when all phases in the round are done
@@ -203,10 +211,11 @@ GET http://localhost:8082/api/v1/rooms/{code}/round
 ### Submit a Guess
 
 ```
-POST http://localhost:8082/api/v1/rooms/{code}/guess
+POST http://localhost:8082/api/v1/games/{code}/guess
 ```
 
 **Request body (GAME phase):**
+
 ```json
 {
   "playerId": "user-uuid-456",
@@ -216,6 +225,7 @@ POST http://localhost:8082/api/v1/rooms/{code}/guess
 ```
 
 **Request body (LEVEL phase):**
+
 ```json
 {
   "playerId": "user-uuid-456",
@@ -225,6 +235,7 @@ POST http://localhost:8082/api/v1/rooms/{code}/guess
 ```
 
 **Request body (SPOT phase):**
+
 ```json
 {
   "playerId": "user-uuid-456",
@@ -239,19 +250,21 @@ POST http://localhost:8082/api/v1/rooms/{code}/guess
 **Errors:** `400` wrong phase or missing fields, `404` room or match not found.
 
 **Phase rules:**
+
 - You must submit `GAME` before you can submit `LEVEL`
 - You must submit both `GAME` and `LEVEL` before `SPOT`
 - SPOT phase is post-MVP — it always scores 0 for now
 
 ---
 
-### Get Match Results *(end of game)*
+### Get Match Results _(end of game)_
 
 ```
-GET http://localhost:8082/api/v1/rooms/{code}/results
+GET http://localhost:8082/api/v1/games/{code}/results
 ```
 
 **Response `200`:**
+
 ```json
 {
   "roomCode": "ABC123",
@@ -285,6 +298,7 @@ GET http://localhost:8084/api/v1/scoring/{roomCode}/rounds/{roundNumber}
 ```
 
 **Response `200`:**
+
 ```json
 {
   "roomCode": "ABC123",
@@ -317,13 +331,14 @@ Same response shape — includes all rounds and all players.
 
 ## 4. Leaderboard
 
-### Room Leaderboard *(current match ranking)*
+### Room Leaderboard _(current match ranking)_
 
 ```
 GET http://localhost:8085/api/v1/leaderboard/room/{code}
 ```
 
 **Response `200`:**
+
 ```json
 {
   "leaderboardType": "room",
@@ -349,11 +364,11 @@ Same response shape with `leaderboardType: "global"` and `identifier: "all"`.
 
 ## Scoring Rules
 
-| Phase | Points | Logic |
-|-------|--------|-------|
-| GAME  | 0 or 1000 | Binary: any non-empty answer = 1000 pts (MVP) |
-| LEVEL | 500–1000 | 500 base + up to 500 time bonus (faster = more) |
-| SPOT  | 0 | Post-MVP stub — always 0 |
+| Phase | Points    | Logic                                           |
+| ----- | --------- | ----------------------------------------------- |
+| GAME  | 0 or 1000 | Binary: any non-empty answer = 1000 pts (MVP)   |
+| LEVEL | 500–1000  | 500 base + up to 500 time bonus (faster = more) |
+| SPOT  | 0         | Post-MVP stub — always 0                        |
 
 **Time bonus (LEVEL phase):** Scales from 500 pts (answer in ≤0s) to 0 pts (answer in ≥60s).
 
@@ -361,12 +376,12 @@ Same response shape with `leaderboardType: "global"` and `identifier: "all"`.
 
 ## Room Status Values
 
-| Status | Meaning |
-|--------|---------|
-| `OPEN` | Waiting for players, joinable |
+| Status        | Meaning                       |
+| ------------- | ----------------------------- |
+| `OPEN`        | Waiting for players, joinable |
 | `IN_PROGRESS` | Match running, no new players |
-| `FINISHED` | Match done |
-| `CLOSED` | Host left, room defunct |
+| `FINISHED`    | Match done                    |
+| `CLOSED`      | Host left, room defunct       |
 
 ---
 
@@ -374,12 +389,12 @@ Same response shape with `leaderboardType: "global"` and `identifier: "all"`.
 
 Since there is no WebSocket yet, poll these endpoints:
 
-| What to track | Endpoint | Suggested interval |
-|---------------|----------|--------------------|
-| Room player list / status | `GET /api/v1/rooms/{code}` | Every 2s in lobby |
-| Round phase changes | `GET /api/v1/rooms/{code}/round` | Every 1–2s during game |
-| Live scores during round | `GET /api/v1/scoring/{roomCode}/rounds/{n}` | After submitting a guess |
-| Leaderboard | `GET /api/v1/leaderboard/room/{code}` | After each round |
+| What to track             | Endpoint                                    | Suggested interval       |
+| ------------------------- | ------------------------------------------- | ------------------------ |
+| Room player list / status | `GET /api/v1/rooms/{code}`                  | Every 2s in lobby        |
+| Round phase changes       | `GET /api/v1/rooms/{code}/round`            | Every 1–2s during game   |
+| Live scores during round  | `GET /api/v1/scoring/{roomCode}/rounds/{n}` | After submitting a guess |
+| Leaderboard               | `GET /api/v1/leaderboard/room/{code}`       | After each round         |
 
 ---
 
@@ -391,9 +406,9 @@ The noclip viewer runs at `http://localhost:8000` (or `http://gg_noclip` inside 
 
 ## Error Reference
 
-| Code | Meaning |
-|------|---------|
-| `400` | Invalid request body or phase |
-| `403` | Operation requires host privileges |
-| `404` | Room, match, or round not found |
+| Code  | Meaning                                                      |
+| ----- | ------------------------------------------------------------ |
+| `400` | Invalid request body or phase                                |
+| `403` | Operation requires host privileges                           |
+| `404` | Room, match, or round not found                              |
 | `409` | Conflict (room full, match already started, already in room) |
