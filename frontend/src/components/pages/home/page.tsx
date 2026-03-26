@@ -2,33 +2,36 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { GalaxyBackground } from '@/components/background/GalaxyBackground';
 import InfoBar from '@/components/ui/InfoBar';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { createRoomMutation } from '@/client/lobby-service/@tanstack/react-query.gen';
 import { useMutation } from '@tanstack/react-query';
 
+import { defaultConfig } from '@/client/config';
+import { useAuth } from '@/hooks/useAuth';
+
 export function HomePage() {
   const navigate = useNavigate();
   const { mutateAsync: createRoom, isPending } = useMutation(createRoomMutation());
-  
-  const [pseudo, setPseudo] = useState<string>('');
+  const { user } = useAuth();
 
-  const handleCreatePrivate = async () => {
-    if (pseudo == '') {
-      toast('Ben alors tu donnes pas de nom?', { position: 'top-left' });
-      return;
-    }
-    if (Math.floor(Math.random() * 3) == 1) {
-      toast('Pseudo pas assez cool, réessaye', { position: 'top-left' });
-      return;
-    }
+  const [isPrivate, setIsPrivate] = useState<boolean>(false);
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
+
+  const handleCreateRoom = async () => {
     try {
-      const room = await createRoom({body: {hostId: pseudo, isPrivate: false} })
+      const room = await createRoom({
+        body: { hostId: user.id, isPrivate },
+        ...defaultConfig,
+      });
       navigate(`/room/${room.roomCode}`);
     } catch (e) {
       console.log({ e });
-      toast('Échec de création de la salle', { position: 'top-left' });
+      toast(`Échec de création de la salle`, { position: 'top-left' });
     }
   };
 
@@ -57,24 +60,27 @@ export function HomePage() {
 
       <InfoBar
         title="Lancer une partie"
-        subtitle="Rentre un pseudo pour jouer"
+        subtitle="Joue avec tes amis ou des gens du monde entier"
         content={
-          <Input
-            value={pseudo}
-            onChange={(e) => setPseudo(e.target.value ?? '')}
-            id="input-demo-api-key"
-            placeholder="CoolName"
-            disabled={isPending}
-          />
+          <div className="flex gap-2 w-full">
+            <Button
+              variant={!isPrivate ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setIsPrivate(false)}
+            >
+              Salle publique
+            </Button>
+            <Button
+              variant={isPrivate ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setIsPrivate(true)}
+            >
+              Salle privée
+            </Button>
+          </div>
         }
         actions={
-          <Button
-            size="lg"
-            onClick={handleCreatePrivate}
-            disabled={isPending}
-            variant={'default'}
-
-          >
+          <Button size="lg" onClick={handleCreateRoom} disabled={isPending} variant={'default'}>
             Démarrer
           </Button>
         }
