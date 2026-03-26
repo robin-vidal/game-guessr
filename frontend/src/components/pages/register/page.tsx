@@ -77,14 +77,12 @@ export function RegisterPage() {
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value ?? '')}
-              id="input-demo-api-key"
               placeholder="Pseudo cool"
               disabled={isLoading}
             />
             <Input
               value={password}
               onChange={(e) => setPassword(e.target.value ?? '')}
-              id="input-demo-api-key"
               type="password"
               placeholder="Mot de passe sécurisé"
               disabled={isLoading}
@@ -96,7 +94,7 @@ export function RegisterPage() {
         }
         actions={
           <Button size="lg" onClick={handleRegister} disabled={isLoading} variant={'default'}>
-            Se connecter
+            Se créer un compte
           </Button>
         }
       />
