@@ -3,7 +3,6 @@ kind: Gateway
 metadata:
   name: game-guessr-gke-gateway
   annotations:
-    #TODO: add certmap
     networking.gke.io/certmap: game-guessr-cert-maps
     networking.gke.io/static-ip: gkegw1-gaxb-game-guessr-de-game-guessr-gke-gateway-jw3ywqh5o781
 spec:
