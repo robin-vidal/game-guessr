@@ -9,6 +9,7 @@ import LoadingScreen from '@/components/ui/LoadingScreen';
 import { getCurrentRoundOptions } from '@/client/game-service/@tanstack/react-query.gen';
 import GuessGameInput from './components/guess-inputs/GuessGameInput';
 import GuessLevelInput from './components/guess-inputs/GuessLevelInput';
+import { config } from '@/config';
 
 /**
  * GamePage wires together:
@@ -26,9 +27,7 @@ export function GamePage() {
   const { data: room, isPending: isGamePending } = useQuery({
     ...getRoomOptions({ path: { code: roomId! }, ...defaultConfig }),
     refetchInterval: (query) => {
-      // Stop polling once the game is over
-      if (query.state.data?.status === 'CLOSED' || query.state.data?.status === 'FINISHED')
-        return false;
+      if (query.state.data?.status !== 'IN_PROGRESS') return false;
       return 60 * 1000; // poll every minute
     },
   });
@@ -51,7 +50,8 @@ export function GamePage() {
     return null;
   }
 
-  const iframeBaseUrl = import.meta.env.NOCLIP_FRONTEND_URL ?? 'http://localhost:8000';
+  const iframeBaseUrl = config.noclipFrontendUrl;
+
   const iframeHash = round.noclipHash ?? '';
   const iframeUrl = `${iframeBaseUrl}/#${iframeHash}`;
   const currentPhase = round.currentPhase;

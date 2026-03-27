@@ -1,0 +1,3 @@
+window.__APP_CONFIG__ = {
+  noclipFrontendUrl: '${NOCLIP_FRONTEND_URL}',
+};
