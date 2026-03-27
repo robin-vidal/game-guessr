@@ -21,3 +21,7 @@ patches:
     target:
       kind: HTTPRoute
       name: game-guessr-frontend
+  - path: pgadmin-deployment-patch.yaml
+    target:
+      kind: Deployment
+      name: pgadmin

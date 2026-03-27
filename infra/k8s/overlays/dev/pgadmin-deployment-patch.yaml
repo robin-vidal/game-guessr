@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init-servers-config
+          env:
+            - name: POSTGRES_HOST
+              value: "postgresql-dev"

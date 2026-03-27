@@ -6,6 +6,8 @@ spec:
   parentRefs:
   - name: game-guessr-gke-gateway-dev
     namespace: game-guessr-dev
+  hostnames:
+  - "dev.game-guessr.robin-vidal.com"
   rules:
   - backendRefs:
     - name: game-guessr-frontend-dev
