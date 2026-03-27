@@ -204,6 +204,7 @@ services:
     restart: unless-stopped
     environment:
       PUBLIC_ENABLE_UI: false
+      PUBLIC_STORAGE_URL: https://z:noclip:website
 
   # ── game-guessr frontend ────────────────────────────────────────────
   frontend:
