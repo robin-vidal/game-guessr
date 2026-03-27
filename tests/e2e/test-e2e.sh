@@ -77,7 +77,7 @@ trap cleanup EXIT
 bold "=== Checking services are reachable ==="
 SERVICES_OK=true
 for url in "$LOBBY/api/v1/rooms" \
-           "$GAME/api/v1/rooms/HEALTH_PROBE/round" \
+           "$GAME/api/v1/games/HEALTH_PROBE/round" \
            "$SCORING/api/v1/scoring/HEALTH_PROBE" \
            "$LB/api/v1/leaderboard/global"; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
@@ -199,42 +199,42 @@ echo "    Waiting 3s for Kafka room.created event delivery..."
 sleep 3
 
 # 2.1 Get round before match started — match exists (WAITING) but not in progress → 409
-cyan "--- 2.1 GET /api/v1/rooms/{code}/round — before start → 409 (WAITING)"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
+cyan "--- 2.1 GET /api/v1/games/{code}/round — before start → 409 (WAITING)"
+req GET "$GAME/api/v1/games/$ROOM_CODE/round"
 assert_status "Get round before start → 409" 409 "$STATUS"
 echo ""
 
 # 2.2 Submit guess before match started — match WAITING → 409
-cyan "--- 2.2 POST /api/v1/rooms/{code}/guess — before start → 409"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+cyan "--- 2.2 POST /api/v1/games/{code}/guess — before start → 409"
+req POST "$GAME/api/v1/games/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"GAME","textAnswer":"Mario Kart 8"}'
 assert_status "Submit guess before start → 409" 409 "$STATUS"
 echo ""
 
 # 2.3 Start match for unknown room — no Kafka event received → 404
 FAKE_CODE="FAKE$(date +%s)"
-cyan "--- 2.3 POST /api/v1/rooms/${FAKE_CODE}/start — no pre-created match → 404"
-req POST "$GAME/api/v1/rooms/$FAKE_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
+cyan "--- 2.3 POST /api/v1/games/${FAKE_CODE}/start — no pre-created match → 404"
+req POST "$GAME/api/v1/games/$FAKE_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
 assert_status "Start match for unknown room → 404" 404 "$STATUS"
 echo ""
 
 # 2.4 Start match for real room (lobby created it, Kafka pre-created WAITING match)
-cyan "--- 2.4 POST /api/v1/rooms/{code}/start — start match → 201"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
+cyan "--- 2.4 POST /api/v1/games/{code}/start — start match → 201"
+req POST "$GAME/api/v1/games/$ROOM_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
 assert_status "Start match → 201" 201 "$STATUS"
 echo "    Waiting 2s for Kafka round.update event..."
 sleep 2
 echo ""
 
 # 2.5 Start match again — already started → 409
-cyan "--- 2.5 POST /api/v1/rooms/{code}/start — already started → 409"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
+cyan "--- 2.5 POST /api/v1/games/{code}/start — already started → 409"
+req POST "$GAME/api/v1/games/$ROOM_CODE/start" '{"hostId":"p1","playerIds":["p1","p2"]}'
 assert_status "Start already-started match → 409" 409 "$STATUS"
 echo ""
 
 # 2.6 Get current round — now returns real game pack data + noclipHash
-cyan "--- 2.6 GET /api/v1/rooms/{code}/round → 200"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
+cyan "--- 2.6 GET /api/v1/games/{code}/round → 200"
+req GET "$GAME/api/v1/games/$ROOM_CODE/round"
 assert_status "Get current round → 200" 200 "$STATUS"
 assert_field  "roundNumber present"   ".roundNumber"   "$BODY"
 assert_field  "gameId present"        ".gameId"        "$BODY"
@@ -268,7 +268,7 @@ echo ""
 
 # 2.6c All 5 rounds should have distinct noclipHashes (different positions)
 cyan "--- 2.6c Verify rounds use different positions (via results endpoint)"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/results"
+req GET "$GAME/api/v1/games/$ROOM_CODE/results"
 ROUND_COUNT=$(echo "$BODY" | jq '.rounds | length')
 UNIQUE_HASHES=$(echo "$BODY" | jq '[.rounds[].noclipHash] | unique | length')
 if [ "$ROUND_COUNT" -gt 1 ] && [ "$UNIQUE_HASHES" -eq "$ROUND_COUNT" ]; then
@@ -286,48 +286,48 @@ echo ""
 
 # 2.7 Submit LEVEL guess while current phase is GAME → 400 (InvalidPhaseException)
 cyan "--- 2.7 POST .../guess — LEVEL during GAME phase → 400"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+req POST "$GAME/api/v1/games/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"LEVEL","textAnswer":"Baby Park"}'
 assert_status "LEVEL guess during GAME phase → 400" 400 "$STATUS"
 echo ""
 
 # 2.8 Submit SPOT guess while current phase is GAME → 400
 cyan "--- 2.8 POST .../guess — SPOT during GAME phase → 400"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+req POST "$GAME/api/v1/games/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"SPOT","guessX":100.0,"guessY":50.0,"guessZ":-200.0}'
 assert_status "SPOT guess during GAME phase → 400" 400 "$STATUS"
 echo ""
 
 # 2.9 Submit GAME guess — p1 (any non-empty text = accepted/published)
 cyan "--- 2.9 POST .../guess — p1 GAME guess → 202 (phase stays GAME, waiting for p2)"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+req POST "$GAME/api/v1/games/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"GAME","textAnswer":"Mario Kart 8"}'
 assert_status "p1 GAME guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
+req GET "$GAME/api/v1/games/$ROOM_CODE/round"
 assert_equals "Phase still GAME after p1 only" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
 echo ""
 
 # 2.9a Duplicate guess — p1 guesses GAME again → 409
 cyan "--- 2.9a POST .../guess — p1 duplicate GAME guess → 409"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+req POST "$GAME/api/v1/games/$ROOM_CODE/guess" \
     '{"playerId":"p1","phase":"GAME","textAnswer":"Mario Kart Wii"}'
 assert_status "p1 duplicate GAME guess → 409" 409 "$STATUS"
 echo ""
 
 # 2.10 Submit GAME guess — p2 (wrong answer still accepted, scoring decides)
 cyan "--- 2.10 POST .../guess — p2 GAME guess → 202 (all players guessed, phase advances)"
-req POST "$GAME/api/v1/rooms/$ROOM_CODE/guess" \
+req POST "$GAME/api/v1/games/$ROOM_CODE/guess" \
     '{"playerId":"p2","phase":"GAME","textAnswer":"Super Smash Bros"}'
 assert_status "p2 GAME guess (wrong) → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/round"
+req GET "$GAME/api/v1/games/$ROOM_CODE/round"
 assert_equals "Phase now LEVEL after both guessed" "LEVEL" "$(echo "$BODY" | jq -r .currentPhase)"
 echo "    Waiting 3s for Kafka scoring pipeline..."
 sleep 3
 echo ""
 
 # 2.11 Get results — includes noclipHash, trueSpawnX/Z, but NOT trueSpawnY
-cyan "--- 2.11 GET /api/v1/rooms/{code}/results → 200"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/results"
+cyan "--- 2.11 GET /api/v1/games/{code}/results → 200"
+req GET "$GAME/api/v1/games/$ROOM_CODE/results"
 assert_status "Get results → 200" 200 "$STATUS"
 assert_field  "roomCode in results"   ".roomCode"  "$BODY"
 assert_equals "Results has 5 rounds" "5" "$(echo "$BODY" | jq '.rounds | length')"
@@ -356,8 +356,8 @@ fi
 echo ""
 
 # 2.12 Get round — non-existent match → 404
-cyan "--- 2.12 GET /api/v1/rooms/NOSUCHROOM/round → 404"
-req GET "$GAME/api/v1/rooms/NOSUCHROOM/round"
+cyan "--- 2.12 GET /api/v1/games/NOSUCHROOM/round → 404"
+req GET "$GAME/api/v1/games/NOSUCHROOM/round"
 assert_status "Get round non-existent match → 404" 404 "$STATUS"
 echo ""
 
@@ -538,7 +538,7 @@ echo ""
 
 # 5.6 Get results before match started → 404
 cyan "--- 5.6 GET /api/v1/rooms/NOSUCHROOM/results — no match → 404"
-req GET "$GAME/api/v1/rooms/NOSUCHROOM/results"
+req GET "$GAME/api/v1/games/NOSUCHROOM/results"
 assert_status "Get results no match → 404" 404 "$STATUS"
 echo ""
 
@@ -561,7 +561,7 @@ echo ""
 
 # 5.8 Game service: match not in progress after room closed → 409
 cyan "--- 5.8 Results endpoint while match exists → 200 (game svc has no CLOSED check)"
-req GET "$GAME/api/v1/rooms/$ROOM_CODE/results"
+req GET "$GAME/api/v1/games/$ROOM_CODE/results"
 assert_status "Results for active room → 200" 200 "$STATUS"
 echo ""
 
@@ -583,14 +583,14 @@ req POST "$LOBBY/api/v1/rooms/$LIFE_CODE/join" \
 echo "    Room: $LIFE_CODE (players: life-host, life-p2)"
 echo "    Waiting 3s for Kafka room event..."
 sleep 3
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/start" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/start" \
     '{"hostId":"life-host","playerIds":["life-host","life-p2"]}'
 assert_status "Lifecycle match started → 201" 201 "$STATUS"
 echo ""
 
 # ── 6.1 Verify initial state: round 1, phase GAME ───────────
 cyan "--- 6.1 Initial state: round 1, phase GAME"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
 assert_equals "Phase = GAME" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
 assert_equals "Not finished" "false" "$(echo "$BODY" | jq -r .finished)"
@@ -598,48 +598,48 @@ echo ""
 
 # ── 6.2 Request validation: missing playerId → 400 ──────────
 cyan "--- 6.2 POST .../guess — missing playerId → 400"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"phase":"GAME","textAnswer":"Test"}'
 assert_status "Missing playerId → 400" 400 "$STATUS"
 echo ""
 
 # ── 6.3 Request validation: invalid phase string → 400 ──────
 cyan "--- 6.3 POST .../guess — invalid phase value → 400"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"INVALID","textAnswer":"Test"}'
 assert_status "Invalid phase value → 400" 400 "$STATUS"
 echo ""
 
 # ── 6.4 Request validation: missing phase → 400 ─────────────
 cyan "--- 6.4 POST .../guess — missing phase → 400"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","textAnswer":"Test"}'
 assert_status "Missing phase → 400" 400 "$STATUS"
 echo ""
 
 # ── 6.5 GAME guess — single player does NOT advance phase ───
 cyan "--- 6.5 GAME guess (life-host only) → phase stays GAME (waiting for life-p2)"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"GAME","textAnswer":"Mario Kart Wii"}'
 assert_status "life-host GAME guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Phase still GAME" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
 assert_equals "Still round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
 echo ""
 
 # ── 6.5a Duplicate guess → 409 ──────────────────────────────
 cyan "--- 6.5a Duplicate GAME guess by life-host → 409"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"GAME","textAnswer":"Mario Kart Wii"}'
 assert_status "Duplicate GAME guess → 409" 409 "$STATUS"
 echo ""
 
 # ── 6.5b Both players guessed → phase advances to LEVEL ─────
 cyan "--- 6.5b life-p2 GAME guess → all players done, phase advances to LEVEL"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-p2","phase":"GAME","textAnswer":"Mario Kart Wii"}'
 assert_status "life-p2 GAME guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Phase now LEVEL" "LEVEL" "$(echo "$BODY" | jq -r .currentPhase)"
 assert_equals "Still round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
 assert_equals "Round not finished" "false" "$(echo "$BODY" | jq -r .finished)"
@@ -647,37 +647,37 @@ echo ""
 
 # ── 6.6 SPOT during LEVEL phase → 400 ───────────────────────
 cyan "--- 6.6 SPOT guess during LEVEL phase → 400"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"SPOT","guessX":1.0,"guessY":2.0,"guessZ":3.0}'
 assert_status "SPOT during LEVEL phase → 400" 400 "$STATUS"
 echo ""
 
 # ── 6.7 LEVEL guess — both players, phase advances to SPOT ──
 cyan "--- 6.7 LEVEL guesses (both players) → phase advances to SPOT"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"LEVEL","textAnswer":"Luigi Circuit"}'
 assert_status "life-host LEVEL guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Phase still LEVEL after 1 player" "LEVEL" "$(echo "$BODY" | jq -r .currentPhase)"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-p2","phase":"LEVEL","textAnswer":"Luigi Circuit"}'
 assert_status "life-p2 LEVEL guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Phase now SPOT" "SPOT" "$(echo "$BODY" | jq -r .currentPhase)"
 assert_equals "Still round 1" "1" "$(echo "$BODY" | jq -r .roundNumber)"
 echo ""
 
 # ── 6.8 SPOT guesses — both players, round finishes, advance to round 2 ─
 cyan "--- 6.8 SPOT guesses (both players) → round 1 finishes, advance to round 2"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"SPOT","guessX":10.0,"guessY":5.0,"guessZ":-20.0}'
 assert_status "life-host SPOT guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Still round 1 after 1 SPOT guess" "1" "$(echo "$BODY" | jq -r .roundNumber)"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-p2","phase":"SPOT","guessX":15.0,"guessY":3.0,"guessZ":-25.0}'
 assert_status "life-p2 SPOT guess → 202" 202 "$STATUS"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_equals "Now round 2" "2" "$(echo "$BODY" | jq -r .roundNumber)"
 assert_equals "Phase reset to GAME" "GAME" "$(echo "$BODY" | jq -r .currentPhase)"
 assert_equals "Round 2 not finished" "false" "$(echo "$BODY" | jq -r .finished)"
@@ -689,10 +689,10 @@ for round_i in 2 3 4 5; do
   for phase in GAME LEVEL SPOT; do
     for player in life-host life-p2; do
       if [ "$phase" = "SPOT" ]; then
-        req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+        req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
             "{\"playerId\":\"$player\",\"phase\":\"$phase\",\"guessX\":1.0,\"guessY\":2.0,\"guessZ\":3.0}"
       else
-        req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+        req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
             "{\"playerId\":\"$player\",\"phase\":\"$phase\",\"textAnswer\":\"Answer\"}"
       fi
       if [ "$STATUS" -ne 202 ]; then
@@ -709,20 +709,20 @@ echo ""
 
 # ── 6.10 Match is now FINISHED — verify via results ─────────
 cyan "--- 6.10 Match FINISHED after all 5 rounds"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/results"
+req GET "$GAME/api/v1/games/$LIFE_CODE/results"
 assert_status "Get results → 200" 200 "$STATUS"
 assert_equals "matchStatus = FINISHED" "FINISHED" "$(echo "$BODY" | jq -r .matchStatus)"
 echo ""
 
 # ── 6.11 GET /round on FINISHED match → 409 ─────────────────
 cyan "--- 6.11 GET /round on FINISHED match → 409"
-req GET "$GAME/api/v1/rooms/$LIFE_CODE/round"
+req GET "$GAME/api/v1/games/$LIFE_CODE/round"
 assert_status "Round on finished match → 409" 409 "$STATUS"
 echo ""
 
 # ── 6.12 Submit guess on FINISHED match → 409 ───────────────
 cyan "--- 6.12 Submit guess on FINISHED match → 409"
-req POST "$GAME/api/v1/rooms/$LIFE_CODE/guess" \
+req POST "$GAME/api/v1/games/$LIFE_CODE/guess" \
     '{"playerId":"life-host","phase":"GAME","textAnswer":"Test"}'
 assert_status "Guess on finished match → 409" 409 "$STATUS"
 echo ""
@@ -882,12 +882,12 @@ req POST "$LOBBY/api/v1/rooms" '{"hostId":"blank-host","isPrivate":false}'
 BLANK_CODE=$(echo "$BODY" | jq -r .roomCode)
 echo "    Waiting 3s for Kafka room event..."
 sleep 3
-req POST "$GAME/api/v1/rooms/$BLANK_CODE/start" '{"hostId":"blank-host","playerIds":["blank-host"]}'
+req POST "$GAME/api/v1/games/$BLANK_CODE/start" '{"hostId":"blank-host","playerIds":["blank-host"]}'
 assert_status "Blank-test match started → 201" 201 "$STATUS"
 echo ""
 
 cyan "--- 7.3 GAME guess with empty textAnswer → 202 (accepted, scoring gives 0)"
-req POST "$GAME/api/v1/rooms/$BLANK_CODE/guess" \
+req POST "$GAME/api/v1/games/$BLANK_CODE/guess" \
     '{"playerId":"blank-host","phase":"GAME","textAnswer":""}'
 assert_status "Blank GAME guess → 202" 202 "$STATUS"
 echo "    Waiting 3s for scoring pipeline..."
@@ -910,7 +910,7 @@ echo ""
 cyan "--- 7.5 GAME guess with null textAnswer → 202"
 # Phase is now LEVEL after previous GAME guess, so we need a new match
 # Use the blank room — phase is LEVEL now, so submit LEVEL with null
-req POST "$GAME/api/v1/rooms/$BLANK_CODE/guess" \
+req POST "$GAME/api/v1/games/$BLANK_CODE/guess" \
     '{"playerId":"blank-host","phase":"LEVEL","textAnswer":null}'
 assert_status "Null textAnswer LEVEL guess → 202" 202 "$STATUS"
 echo "    Waiting 3s for scoring..."

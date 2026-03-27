@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 /**
- * Request body for {@code POST /api/v1/rooms/{code}/guess}.
+ * Request body for {@code POST /api/v1/games/{code}/guess}.
  */
 @Data
 @Schema(description = "A player's guess for the current round phase")

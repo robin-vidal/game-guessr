@@ -41,7 +41,7 @@ export const startMatch = <ThrowOnError extends boolean = false>(
   options: Options<StartMatchData, ThrowOnError>
 ) =>
   (options.client ?? client).post<StartMatchResponses, StartMatchErrors, ThrowOnError>({
-    url: '/api/v1/rooms/{code}/start',
+    url: '/api/v1/games/{code}/start',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export const submitGuess = <ThrowOnError extends boolean = false>(
   options: Options<SubmitGuessData, ThrowOnError>
 ) =>
   (options.client ?? client).post<SubmitGuessResponses, SubmitGuessErrors, ThrowOnError>({
-    url: '/api/v1/rooms/{code}/guess',
+    url: '/api/v1/games/{code}/guess',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export const getCurrentRound = <ThrowOnError extends boolean = false>(
   options: Options<GetCurrentRoundData, ThrowOnError>
 ) =>
   (options.client ?? client).get<GetCurrentRoundResponses, GetCurrentRoundErrors, ThrowOnError>({
-    url: '/api/v1/rooms/{code}/round',
+    url: '/api/v1/games/{code}/round',
     ...options,
   });
 
@@ -82,6 +82,6 @@ export const getResults = <ThrowOnError extends boolean = false>(
   options: Options<GetResultsData, ThrowOnError>
 ) =>
   (options.client ?? client).get<GetResultsResponses, GetResultsErrors, ThrowOnError>({
-    url: '/api/v1/rooms/{code}/results',
+    url: '/api/v1/games/{code}/results',
     ...options,
   });

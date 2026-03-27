@@ -125,7 +125,7 @@ export type StartMatchData = {
     code: string;
   };
   query?: never;
-  url: '/api/v1/rooms/{code}/start';
+  url: '/api/v1/games/{code}/start';
 };
 
 export type StartMatchErrors = {
@@ -155,7 +155,7 @@ export type SubmitGuessData = {
     code: string;
   };
   query?: never;
-  url: '/api/v1/rooms/{code}/guess';
+  url: '/api/v1/games/{code}/guess';
 };
 
 export type SubmitGuessErrors = {
@@ -185,7 +185,7 @@ export type GetCurrentRoundData = {
     code: string;
   };
   query?: never;
-  url: '/api/v1/rooms/{code}/round';
+  url: '/api/v1/games/{code}/round';
 };
 
 export type GetCurrentRoundErrors = {
@@ -215,7 +215,7 @@ export type GetResultsData = {
     code: string;
   };
   query?: never;
-  url: '/api/v1/rooms/{code}/results';
+  url: '/api/v1/games/{code}/results';
 };
 
 export type GetResultsErrors = {
