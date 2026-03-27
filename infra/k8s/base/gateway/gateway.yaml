@@ -3,12 +3,23 @@ kind: Gateway
 metadata:
   name: game-guessr-gke-gateway
   namespace: game-guessr
+  annotations:
+  #TODO: add certmap
+    networking.gke.io/certmap: game-guessr-cert-maps
+    networking.gke.io/static-ip: gkegw1-gaxb-game-guessr-de-game-guessr-gke-gateway-jw3ywqh5o781
 spec:
   gatewayClassName: gke-l7-global-external-managed
   listeners:
   - name: http
     protocol: HTTP
     port: 80
+    hostname: "game-guessr.robin-vidal.com"
+    allowedRoutes:
+      namespaces:
+        from: Same
+  - name: https
+    protocol: HTTPS
+    port: 443
     hostname: "game-guessr.robin-vidal.com"
     allowedRoutes:
       namespaces:
