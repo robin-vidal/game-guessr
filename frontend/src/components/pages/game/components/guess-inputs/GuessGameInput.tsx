@@ -7,22 +7,31 @@ import { submitGuessMutation } from '@/client/game-service/@tanstack/react-query
 import { Play } from 'lucide-react';
 import { defaultConfig } from '@/client/config';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function GuessGameInput({ roomId }: Readonly<{ roomId: string }>) {
   const [value, setValue] = useState<string>('');
+  const [hasSubmitted, setHasSumbitted] = useState(false);
   const { user } = useAuth();
 
   const { mutateAsync: sendGuess, isPending } = useMutation(submitGuessMutation());
 
   if (!user) return null;
 
-  async function onSumbit() {
-    const res = await sendGuess({
-      body: { playerId: user?.id ?? '', phase: 'GAME', textAnswer: value },
-      path: { code: roomId },
-      ...defaultConfig,
-    });
-    console.log({ res });
+  async function onSubmit() {
+    try{
+      await sendGuess({
+        body: { playerId: user?.id ?? '', phase: 'GAME', textAnswer: value },
+        path: { code: roomId },
+        ...defaultConfig,
+      });
+      toast(`La soumission a été envoyé`, { position: 'top-left' });
+      setHasSumbitted(true);
+    }
+    catch(e){
+      console.log(e)
+      toast(`Échec de la soumission`, { position: 'top-left' });
+    }
   }
 
   return (
@@ -36,9 +45,9 @@ export default function GuessGameInput({ roomId }: Readonly<{ roomId: string }>)
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Nom du jeu"
-            disabled={isPending}
+            disabled={isPending || hasSubmitted}
           />
-          <Button type="submit" onClick={onSumbit} size={'icon'}>
+          <Button type="submit" onClick={onSubmit} size={'icon'}>
             <Play />
           </Button>
         </div>
