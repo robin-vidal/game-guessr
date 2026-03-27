@@ -77,7 +77,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const payload = decodeJwt(token);
 
     const authUser: AuthUser = {
-      id: (payload?.id as string) ?? '',
+      id: (payload?.userId as string) ?? '',
       username: (payload?.sub as string) ?? '',
       token,
     };

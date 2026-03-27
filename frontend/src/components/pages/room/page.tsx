@@ -5,47 +5,64 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { GalaxyBackground } from '@/components/background/GalaxyBackground';
 import Paper from '@/components/ui/Paper';
-import { House, Copy } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getRoomOptions } from '@/client/lobby-service/@tanstack/react-query.gen';
+import { getRoomOptions, joinRoomMutation } from '@/client/lobby-service/@tanstack/react-query.gen';
 import { startMatchMutation } from '@/client/game-service/@tanstack/react-query.gen';
 import { defaultConfig } from '@/client/config';
+import HomeButton from '@/components/ui/HomeButton';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: room, isPending } = useQuery(
-    getRoomOptions({ path: { code: roomId! }, ...defaultConfig })
-  );
+  const { data: room, isPending } = useQuery({
+    ...getRoomOptions({ path: { code: roomId! }, ...defaultConfig }),
+    refetchInterval: (query) => {
+      if (query.state.data?.status !== 'OPEN') return false;
+      return 2 * 1000; // poll every 2 sec
+    },
+  });
 
   const { mutateAsync: startMatch, isPending: isStartMatchPending } =
     useMutation(startMatchMutation());
+  const { mutateAsync: joinRoom, isPending: isJoinPending } = useMutation(joinRoomMutation());
 
   // Navigate to game when match starts
+  if (room?.status && room?.status != 'OPEN') {
+    navigate(`/game/${roomId}`);
+  }
+
   useEffect(() => {
-    if (room?.status && room?.status != 'OPEN') {
-      navigate(`/game/${roomId}`);
-    }
-  }, [room?.status, navigate, roomId]);
+    const playerIds = room?.players?.map((p) => p.playerId);
+    if (playerIds?.includes(user?.id) || room?.status !== 'OPEN') return;
+
+    const join = async () => {
+      try {
+        await joinRoom({
+          body: { playerId: user?.id ?? '', displayName: user?.username ?? '' },
+          path: { code: roomId! },
+          ...defaultConfig,
+        });
+      } catch (e) {
+        console.log({ e });
+      }
+    };
+
+    join();
+  }, [room?.players, room?.status, user?.id, user?.username, roomId, joinRoom]);
 
   if (!roomId) {
     navigate(`/`);
-    return;
+    return null;
   }
-  if (isPending) {
-    return (
-      <GalaxyBackground>
-        <div className="flex h-screen items-center justify-center">
-          <span className="text-muted-foreground animate-pulse text-sm">
-            Chargement de la salle…
-          </span>
-        </div>
-      </GalaxyBackground>
-    );
+
+  if (isPending || isJoinPending) {
+    return <LoadingScreen />;
   }
 
   if (!room) {
@@ -75,20 +92,7 @@ export function RoomPage() {
 
   return (
     <GalaxyBackground>
-      <Button
-        variant="secondary"
-        size="icon"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          margin: '2rem',
-          padding: 4,
-        }}
-        onClick={() => navigate('/')}
-      >
-        <House />
-      </Button>
+      <HomeButton />
       <Container>
         <Paper>
           <>
