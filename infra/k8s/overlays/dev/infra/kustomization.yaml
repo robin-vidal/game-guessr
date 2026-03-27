@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - postgres-secret.yaml
   - pgadmin-secret.yaml
+  - pgadmin-httproute.yaml

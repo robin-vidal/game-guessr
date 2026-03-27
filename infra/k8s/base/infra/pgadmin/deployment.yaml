@@ -12,6 +12,36 @@ spec:
       labels:
         app: pgadmin
     spec:
+      initContainers:
+        - name: init-servers-config
+          image: busybox
+          env:
+            - name: POSTGRES_HOST
+              value: "postgresql"
+            - name: POSTGRES_USER
+              value: "gameuser"
+          command:
+            - sh
+            - -c
+            - |
+              cat > /config/servers.json <<EOF
+              {
+                "Servers": {
+                  "1": {
+                    "Name": "PostgreSQL",
+                    "Group": "Servers",
+                    "Host": "$POSTGRES_HOST",
+                    "Port": 5432,
+                    "MaintenanceDB": "postgres",
+                    "Username": "$POSTGRES_USER",
+                    "SSLMode": "prefer"
+                  }
+                }
+              }
+              EOF
+          volumeMounts:
+            - name: servers-config
+              mountPath: /config
       containers:
         - name: pgadmin
           image: dpage/pgadmin4:8
@@ -34,3 +64,11 @@ spec:
               memory: 128Mi
             limits:
               memory: 256Mi
+          volumeMounts:
+            - name: servers-config
+              mountPath: /pgadmin4/servers.json
+              subPath: servers.json
+              readOnly: true
+      volumes:
+        - name: servers-config
+          emptyDir: {}
