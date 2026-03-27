@@ -32,6 +32,10 @@ out/
 # ── IDE — Neovim  ─────────────────────────────────────────────────────────
 .nvim.lua
 mise.local.toml
+**/*.settings
+**/*.classpath
+**/*.factorypath
+**/*.project
 
 # ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
@@ -43,6 +47,7 @@ mise.local.toml
 .env
 .env.*
 !.env.example
+!.env.local
 
 # ── Logs ──────────────────────────────────────────────────────────────────
 logs/
