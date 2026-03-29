@@ -28,13 +28,16 @@ public class KafkaGameEventPublisher implements GameEventPublisher {
     private String roundUpdateTopic;
 
     @Override
-    public void publishGuessSubmitted(String roomCode, int roundNumber, Guess guess) {
+    public void publishGuessSubmitted(String roomCode, int roundNumber, Guess guess,
+            String correctGameId, String correctLevelId) {
         GuessSubmittedEvent event = GuessSubmittedEvent.builder()
                 .roomCode(roomCode)
                 .roundNumber(roundNumber)
                 .playerId(guess.getPlayerId())
                 .phase(guess.getPhase().name())
                 .textAnswer(guess.getTextAnswer())
+                .correctGameId(correctGameId)
+                .correctLevelId(correctLevelId)
                 .guessX(guess.getGuessX())
                 .guessY(guess.getGuessY())
                 .guessZ(guess.getGuessZ())

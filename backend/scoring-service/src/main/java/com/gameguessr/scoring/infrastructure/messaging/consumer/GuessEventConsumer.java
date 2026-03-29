@@ -28,6 +28,8 @@ public class GuessEventConsumer {
                 event.getPlayerId(),
                 event.getPhase(),
                 event.getTextAnswer(),
+                event.getCorrectGameId(),
+                event.getCorrectLevelId(),
                 event.getGuessX(),
                 event.getGuessY(),
                 event.getGuessZ(),

@@ -16,6 +16,8 @@ public class GuessSubmittedEvent {
     private String playerId;
     private String phase;
     private String textAnswer;
+    private String correctGameId;
+    private String correctLevelId;
     private Double guessX;
     private Double guessY;
     private Double guessZ;

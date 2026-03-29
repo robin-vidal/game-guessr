@@ -50,6 +50,7 @@ public class ScoringApplicationService implements ScoringUseCase {
     @Transactional
     public Score scoreGuess(String roomCode, int roundNumber, String playerId,
             String phase, String textAnswer,
+            String correctGameId, String correctLevelId,
             Double guessX, Double guessY, Double guessZ,
             String submittedAt) {
 
@@ -63,15 +64,13 @@ public class ScoringApplicationService implements ScoringUseCase {
 
         switch (phase) {
             case "GAME" -> {
-                // MVP: always correct for demo purposes
-                // TODO: wire up actual game title validation
-                isCorrect = textAnswer != null && !textAnswer.isBlank();
+                // normalize() lowercases both sides and replaces hyphens/underscores with spaces
+                isCorrect = fuzzyMatch(textAnswer, correctGameId);
                 points = isCorrect ? gameCorrectPoints : 0;
             }
             case "LEVEL" -> {
-                // MVP: always correct for demo purposes
-                // TODO: wire up actual level validation
-                isCorrect = textAnswer != null && !textAnswer.isBlank();
+                // normalize() lowercases both sides before comparison
+                isCorrect = fuzzyMatch(textAnswer, correctLevelId);
 
                 // Calculate time bonus: faster answers get more bonus points
                 if (isCorrect && submittedAt != null) {
@@ -136,5 +135,35 @@ public class ScoringApplicationService implements ScoringUseCase {
     @Transactional(readOnly = true)
     public List<Score> getMatchScores(String roomCode) {
         return scoreRepository.findByRoomCode(roomCode);
+    }
+
+    // ── Fuzzy matching helpers ─────────────────────────────────────────
+
+    private static String normalize(String s) {
+        return s == null ? "" : s.trim().toLowerCase().replaceAll("[-_]+", " ").replaceAll("\\s+", " ");
+    }
+
+    private static int levenshtein(String a, String b) {
+        int m = a.length(), n = b.length();
+        int[][] dp = new int[m + 1][n + 1];
+        for (int i = 0; i <= m; i++) dp[i][0] = i;
+        for (int j = 0; j <= n; j++) dp[0][j] = j;
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (a.charAt(i - 1) == b.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    private boolean fuzzyMatch(String answer, String correct) {
+        String a = normalize(answer);
+        String c = normalize(correct);
+        if (a.isBlank() || c.isBlank()) return false;
+        return a.equals(c) || levenshtein(a, c) <= 2;
     }
 }

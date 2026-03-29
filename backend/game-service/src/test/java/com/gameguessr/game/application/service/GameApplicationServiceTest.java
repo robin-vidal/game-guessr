@@ -330,7 +330,8 @@ class GameApplicationServiceTest {
 
         service.submitGuess(ROOM_CODE, guess);
 
-        verify(gameEventPublisher).publishGuessSubmitted(eq(ROOM_CODE), eq(1), eq(guess));
+        verify(gameEventPublisher).publishGuessSubmitted(eq(ROOM_CODE), eq(1), eq(guess),
+                eq(GAME_PACK_SLUG), any(String.class));
     }
 
     @Test

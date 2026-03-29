@@ -7,6 +7,7 @@ import com.gameguessr.game.infrastructure.persistence.entity.LevelCoordinateEnti
 import com.gameguessr.game.infrastructure.persistence.entity.LevelEntity;
 import com.gameguessr.game.infrastructure.persistence.repository.JpaLevelRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -32,6 +33,20 @@ public class LevelRepositoryAdapter implements LevelRepository {
     @Override
     public long count() {
         return jpaRepository.count();
+    }
+
+    @Override
+    public List<String> findGamePacks() {
+        return jpaRepository.findDistinctGamePacks();
+    }
+
+    @Override
+    public List<String> findLevelNames(String query) {
+        return jpaRepository
+                .findByLevelNameContainingIgnoreCase(query, PageRequest.of(0, 8))
+                .stream()
+                .map(LevelEntity::getLevelName)
+                .toList();
     }
 
     private LevelEntity toEntity(Level level) {

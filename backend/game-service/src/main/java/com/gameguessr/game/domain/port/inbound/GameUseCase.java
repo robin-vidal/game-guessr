@@ -47,4 +47,16 @@ public interface GameUseCase {
      * @return ordered list of rounds with their game pack entries
      */
     List<Round> getResults(String roomCode);
+
+    /**
+     * Returns distinct game pack slugs from the level catalogue.
+     * Used for autocomplete on the GAME guess phase.
+     */
+    List<String> getGamePacks();
+
+    /**
+     * Returns level names containing {@code query} (case-insensitive), max 8.
+     * Used for autocomplete on the LEVEL guess phase.
+     */
+    List<String> getLevelNames(String query);
 }
