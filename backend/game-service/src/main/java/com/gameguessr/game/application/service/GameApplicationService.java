@@ -93,7 +93,9 @@ public class GameApplicationService implements GameUseCase {
         log.info("Player {} submitted {} guess for room {} round {}",
                 guess.getPlayerId(), guess.getPhase(), roomCode, currentRound.getRoundNumber());
 
-        gameEventPublisher.publishGuessSubmitted(roomCode, currentRound.getRoundNumber(), guess);
+        gameEventPublisher.publishGuessSubmitted(roomCode, currentRound.getRoundNumber(), guess,
+                currentRound.getGamePackEntry().getGameId(),
+                currentRound.getGamePackEntry().getLevelId());
 
         // ── Record guess ─────────────────────────────────────────────────
         Set<String> updatedGuessedIds = new HashSet<>(currentRound.getPhaseGuessedPlayerIds());
@@ -120,6 +122,18 @@ public class GameApplicationService implements GameUseCase {
 
         matchRepository.save(match);
         gameEventPublisher.publishRoundUpdate(roomCode, match.currentRound());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getGamePacks() {
+        return levelRepository.findGamePacks();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getLevelNames(String query) {
+        return levelRepository.findLevelNames(query);
     }
 
     @Override

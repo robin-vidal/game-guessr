@@ -1,8 +1,14 @@
 import { useRef } from 'react';
-import { useParams } from 'react-router';
-import { GamePhase } from '@/types';
+import { useNavigate, useParams } from 'react-router';
 import GameHUD from './components/GameHUD';
 import PlaceholderPanel from './components/PlaceholderPanel';
+import { useQuery } from '@tanstack/react-query';
+import { defaultConfig } from '@/client/config';
+import { getRoomOptions } from '@/client/lobby-service/@tanstack/react-query.gen';
+import LoadingScreen from '@/components/ui/LoadingScreen';
+import { getCurrentRoundOptions } from '@/client/game-service/@tanstack/react-query.gen';
+import GuessGameInput from './components/guess-inputs/GuessGameInput';
+import GuessLevelInput from './components/guess-inputs/GuessLevelInput';
 
 /**
  * GamePage wires together:
@@ -15,19 +21,40 @@ import PlaceholderPanel from './components/PlaceholderPanel';
  */
 export function GamePage() {
   const { roomId } = useParams<{ roomId: string }>();
-  console.log({ roomId });
+  const navigate = useNavigate();
 
-  // Note : placeholder for now
-  const { round, timeRemaining, currentPhase } = {
-    round: {
-      roundNumber: 2,
-      totalRounds: 5,
+  const { data: room, isPending: isGamePending } = useQuery({
+    ...getRoomOptions({ path: { code: roomId! }, ...defaultConfig }),
+    refetchInterval: (query) => {
+      // Stop polling once the game is over
+      if (query.state.data?.status === 'CLOSED' || query.state.data?.status === 'FINISHED')
+        return false;
+      return 60 * 1000; // poll every minute
     },
-    timeRemaining: 300,
-    currentPhase: GamePhase.GUESSING_GAME,
-  };
+  });
+
+  const { data: round, isPending: isRoundPending } = useQuery({
+    ...getCurrentRoundOptions({ path: { code: roomId! }, ...defaultConfig }),
+    refetchInterval: (query) => {
+      // Stop polling once the round is over
+      if (query.state.data?.currentPhase === null || query.state.data?.finished) return false;
+      return 2000; // poll every 2s
+    },
+  });
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const iframeUrl = import.meta.env.NOCLIP_FRONTEND_URL || 'http://localhost:8000';
+
+  if (isGamePending || isRoundPending) return <LoadingScreen />;
+
+  if (!roomId || !room || !round) {
+    navigate('/');
+    return null;
+  }
+
+  const iframeBaseUrl = import.meta.env.NOCLIP_FRONTEND_URL ?? 'http://localhost:8000';
+  const iframeHash = round.noclipHash ?? '';
+  const iframeUrl = `${iframeBaseUrl}/#${iframeHash}`;
+  const currentPhase = round.currentPhase;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
@@ -40,26 +67,21 @@ export function GamePage() {
       />
 
       <GameHUD
-        roundNumber={round?.roundNumber ?? 0}
-        totalRounds={round?.totalRounds ?? 0}
-        phase={currentPhase}
-        timeRemaining={timeRemaining}
+        roundNumber={round.roundNumber ?? 0}
+        totalRounds={room?.settings?.roundCount ?? 0}
+        phase={round.currentPhase}
+        startedAt={round.startedAt ?? 0}
+        roundTimeInSeconds={room.settings?.timeLimitSeconds ?? 300}
       />
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4">
-        {currentPhase === GamePhase.GUESSING_GAME && (
-          <PlaceholderPanel label="Phase 1" description="Which game is this from?" />
+        {currentPhase === 'SPOT' && (
+          <PlaceholderPanel label="Phase 2" description="Place le point sur la carte" />
         )}
-        {currentPhase === GamePhase.GUESSING_LEVEL && (
-          <PlaceholderPanel label="Phase 3" description="Drop a pin on the map." />
-        )}
-        {currentPhase === GamePhase.GUESSING_SPOT && (
-          <PlaceholderPanel label="Phase 3" description="Drop a pin on the map." />
-        )}
-        {currentPhase === GamePhase.ROUND_RESULTS && (
-          <PlaceholderPanel label="Round over" description="Calculating scores…" />
-        )}
-        {currentPhase === null && <PlaceholderPanel label="Error" description="Game not found" />}
+        {currentPhase === 'GAME' && <GuessGameInput roomId={roomId} />}
+        {currentPhase === 'LEVEL' && <GuessLevelInput roomId={roomId} />}
+
+        {!currentPhase && <PlaceholderPanel label="Erreur" description="Partie non trouvée" />}
       </div>
     </div>
   );

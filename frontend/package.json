@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write src/",
-    "generate:types": "openapi-typescript http://localhost:8082/api-docs -o src/types/game-service.ts && openapi-typescript http://localhost:8083/api-docs -o src/types/lobby-service.ts && openapi-typescript http://localhost:8084/api-docs -o src/types/scoring-service.ts && openapi-typescript http://localhost:8085/api-docs -o src/types/leaderboard-service.ts"
+    "openapi-ts": "openapi-ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
@@ -17,6 +17,7 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "lucide-react": "^0.511.0",
     "next-themes": "^0.4.6",
     "openapi-fetch": "^0.17.0",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@hey-api/openapi-ts": "0.94.4",
     "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
@@ -39,6 +41,7 @@
     "@typescript-eslint/eslint-plugin": "^8.57.0",
     "@typescript-eslint/parser": "^8.57.0",
     "@vitejs/plugin-react": "^6.0.0",
+    "dotenv": "^17.3.1",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

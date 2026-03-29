@@ -28,14 +28,17 @@ class GuessEventConsumerTest {
 
     private static final String ROOM_CODE = "ABC123";
     private static final String PLAYER_ID = "player-1";
+    private static final String CORRECT_GAME_ID = "mario-kart-wii";
+    private static final String CORRECT_LEVEL_ID = "Luigi Circuit";
 
     @Test
-    @DisplayName("onGuessSubmitted — delegates GAME guess to scoringUseCase")
+    @DisplayName("onGuessSubmitted — delegates GAME guess with correct answers to scoringUseCase")
     void onGuessSubmitted_gamePhase_delegatesToService() {
-        GuessSubmittedEvent event = buildEvent("GAME", "Mario Kart 8", null, null, null, null);
+        GuessSubmittedEvent event = buildEvent("GAME", "Mario Kart 8",
+                CORRECT_GAME_ID, CORRECT_LEVEL_ID, null, null, null, null);
         Score mockScore = buildMockScore();
         when(scoringUseCase.scoreGuess(anyString(), anyInt(), anyString(), anyString(),
-                any(), any(), any(), any(), any())).thenReturn(mockScore);
+                any(), any(), any(), any(), any(), any(), any())).thenReturn(mockScore);
 
         consumer.onGuessSubmitted(event);
 
@@ -45,6 +48,8 @@ class GuessEventConsumerTest {
                 eq(PLAYER_ID),
                 eq("GAME"),
                 eq("Mario Kart 8"),
+                eq(CORRECT_GAME_ID),
+                eq(CORRECT_LEVEL_ID),
                 isNull(), isNull(), isNull(),
                 isNull());
     }
@@ -53,36 +58,41 @@ class GuessEventConsumerTest {
     @DisplayName("onGuessSubmitted — delegates LEVEL guess with submittedAt")
     void onGuessSubmitted_levelPhase_delegatesWithSubmittedAt() {
         Instant submittedAt = Instant.now();
-        GuessSubmittedEvent event = buildEvent("LEVEL", "BabyPark", null, null, null, submittedAt);
+        GuessSubmittedEvent event = buildEvent("LEVEL", "Luigi Circuit",
+                CORRECT_GAME_ID, CORRECT_LEVEL_ID, null, null, null, submittedAt);
         Score mockScore = buildMockScore();
         when(scoringUseCase.scoreGuess(anyString(), anyInt(), anyString(), anyString(),
-                any(), any(), any(), any(), any())).thenReturn(mockScore);
+                any(), any(), any(), any(), any(), any(), any())).thenReturn(mockScore);
 
         consumer.onGuessSubmitted(event);
 
         verify(scoringUseCase).scoreGuess(
                 eq(ROOM_CODE), eq(1), eq(PLAYER_ID), eq("LEVEL"),
-                eq("BabyPark"), isNull(), isNull(), isNull(),
+                eq("Luigi Circuit"),
+                eq(CORRECT_GAME_ID), eq(CORRECT_LEVEL_ID),
+                isNull(), isNull(), isNull(),
                 eq(submittedAt.toString()));
     }
 
     @Test
     @DisplayName("onGuessSubmitted — passes null for submittedAt when event has no timestamp")
     void onGuessSubmitted_nullSubmittedAt_passesNull() {
-        GuessSubmittedEvent event = buildEvent("GAME", "Mario Kart 8", null, null, null, null);
+        GuessSubmittedEvent event = buildEvent("GAME", "Mario Kart 8",
+                CORRECT_GAME_ID, CORRECT_LEVEL_ID, null, null, null, null);
         when(scoringUseCase.scoreGuess(anyString(), anyInt(), anyString(), anyString(),
-                any(), any(), any(), any(), any())).thenReturn(buildMockScore());
+                any(), any(), any(), any(), any(), any(), any())).thenReturn(buildMockScore());
 
         consumer.onGuessSubmitted(event);
 
         verify(scoringUseCase).scoreGuess(
                 any(), anyInt(), any(), any(), any(),
-                any(), any(), any(), isNull());
+                any(), any(), any(), any(), any(), isNull());
     }
 
     // ── helpers ──────────────────────────────────────────────────────
 
     private GuessSubmittedEvent buildEvent(String phase, String textAnswer,
+            String correctGameId, String correctLevelId,
             Double guessX, Double guessY, Double guessZ, Instant submittedAt) {
         GuessSubmittedEvent event = new GuessSubmittedEvent();
         event.setRoomCode(ROOM_CODE);
@@ -90,6 +100,8 @@ class GuessEventConsumerTest {
         event.setPlayerId(PLAYER_ID);
         event.setPhase(phase);
         event.setTextAnswer(textAnswer);
+        event.setCorrectGameId(correctGameId);
+        event.setCorrectLevelId(correctLevelId);
         event.setGuessX(guessX);
         event.setGuessY(guessY);
         event.setGuessZ(guessZ);

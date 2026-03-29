@@ -59,7 +59,7 @@ class KafkaGameEventPublisherTest {
                 .build();
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        publisher.publishGuessSubmitted(ROOM_CODE, 1, guess);
+        publisher.publishGuessSubmitted(ROOM_CODE, 1, guess, "mario-kart-wii", "Luigi Circuit");
 
         verify(kafkaTemplate).send(eq(GUESS_TOPIC), eq(ROOM_CODE), eventCaptor.capture());
         GuessSubmittedEvent event = (GuessSubmittedEvent) eventCaptor.getValue();
@@ -68,6 +68,8 @@ class KafkaGameEventPublisherTest {
         assertThat(event.getPlayerId()).isEqualTo("player-1");
         assertThat(event.getPhase()).isEqualTo("GAME");
         assertThat(event.getTextAnswer()).isEqualTo("Mario Kart Wii");
+        assertThat(event.getCorrectGameId()).isEqualTo("mario-kart-wii");
+        assertThat(event.getCorrectLevelId()).isEqualTo("Luigi Circuit");
     }
 
     @Test

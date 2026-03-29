@@ -14,35 +14,6 @@ export enum GamePhase {
 }
 
 // ─────────────────────────────────────────────
-// Auth
-// Not exposed by any backend service OpenAPI spec
-// ─────────────────────────────────────────────
-
-export interface User {
-  id: string;
-  username: string;
-  displayName: string;
-  avatarUrl?: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-}
-
-export type AuthAction =
-  | { type: 'AUTH_LOADING' }
-  | { type: 'AUTH_SUCCESS'; payload: User }
-  | { type: 'AUTH_FAILURE' }
-  | { type: 'LOGOUT' };
-
-export interface AuthContextValue extends AuthState {
-  login: () => void;
-  logout: () => void;
-}
-
-// ─────────────────────────────────────────────
 // Round State
 // Client-side state derived from polling game-service
 // ─────────────────────────────────────────────

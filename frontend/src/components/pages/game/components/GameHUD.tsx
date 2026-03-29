@@ -1,32 +1,56 @@
-import { GamePhase } from '@/types';
+import { useEffect, useState } from 'react';
+import { GetCurrentRoundResponse } from '@/client/game-service';
 
 interface HUDProps {
   roundNumber: number;
   totalRounds: number;
-  phase: GamePhase | null;
-  timeRemaining: number;
+  phase: GetCurrentRoundResponse['currentPhase'] | null;
+  startedAt: number;
+  roundTimeInSeconds: number;
 }
 
 export default function GameHUD({
   roundNumber,
   totalRounds,
   phase,
-  timeRemaining,
+  roundTimeInSeconds,
+  startedAt,
 }: Readonly<HUDProps>) {
-  const phaseLabel: Record<GamePhase, string> = {
-    [GamePhase.WAITING]: 'Waiting',
-    [GamePhase.EXPLORING]: 'Explore!',
-    [GamePhase.GUESSING_GAME]: 'Phase 1 — Which game?',
-    [GamePhase.GUESSING_LEVEL]: 'Phase 2 — Which level?',
-    [GamePhase.GUESSING_SPOT]: 'Phase 3 — Where exactly?',
-    [GamePhase.ROUND_RESULTS]: 'Round over',
-    [GamePhase.MATCH_FINISHED]: 'Match finished',
+  const phaseLabel: Record<string, string> = {
+    GAME: 'Quel jeu est-ce?',
+    LEVEL: 'Quel niveau?',
+    SPOT: 'Où précisement?',
   };
 
+  function useCountdown(startedAt: number, durationInSeconds: number): number {
+    const getRemaining = () => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      return Math.max(0, durationInSeconds - elapsed);
+    };
+
+    const [timeRemaining, setTimeRemaining] = useState<number>(getRemaining);
+
+    useEffect(() => {
+      // Sync immediately in case the component mounted mid-round
+      setTimeRemaining(getRemaining());
+
+      const interval = setInterval(() => {
+        const remaining = getRemaining();
+        setTimeRemaining(remaining);
+        if (remaining <= 0) clearInterval(interval);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }, [startedAt, durationInSeconds]);
+
+    return timeRemaining;
+  }
+
+  const timeRemaining = useCountdown(startedAt, roundTimeInSeconds);
   const isUrgent = timeRemaining <= 10;
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-4 rounded-full bg-card/80 border border-border backdrop-blur-sm px-5 py-2 text-foreground">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-4 rounded-full bg-card border border-border backdrop-blur-sm px-5 py-2 text-foreground">
       {/* Round badge */}
       <span className="rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground">
         Round {roundNumber}/{totalRounds}
@@ -42,7 +66,7 @@ export default function GameHUD({
       {/* Timer */}
       <span
         className={`text-sm font-bold tabular-nums transition-colors ${
-          isUrgent ? 'text-destructive' : 'text-accent'
+          isUrgent ? 'text-destructive animate-pulse' : 'text-accent'
         }`}
       >
         {timeRemaining}s

@@ -53,7 +53,7 @@ class GameControllerTest {
                 req.setHostId("host-1");
                 req.setPlayerIds(List.of("host-1", "player-2"));
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/start", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isCreated());
@@ -66,7 +66,7 @@ class GameControllerTest {
                 req.setHostId("");
                 req.setPlayerIds(List.of("player-1"));
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/start", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isBadRequest());
@@ -80,7 +80,7 @@ class GameControllerTest {
                 Round round = buildRound(1, GuessPhase.GAME);
                 when(gameUseCase.getCurrentRound(ROOM_CODE)).thenReturn(round);
 
-                mockMvc.perform(get("/api/v1/rooms/{code}/round", ROOM_CODE))
+                mockMvc.perform(get("/api/v1/games/{code}/round", ROOM_CODE))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.roundNumber").value(1))
                                 .andExpect(jsonPath("$.currentPhase").value("GAME"))
@@ -94,7 +94,7 @@ class GameControllerTest {
                 when(gameUseCase.getCurrentRound(ROOM_CODE))
                         .thenThrow(new MatchNotFoundException(ROOM_CODE));
 
-                mockMvc.perform(get("/api/v1/rooms/{code}/round", ROOM_CODE))
+                mockMvc.perform(get("/api/v1/games/{code}/round", ROOM_CODE))
                         .andExpect(status().isNotFound());
         }
 
@@ -110,7 +110,7 @@ class GameControllerTest {
                 req.setPhase("GAME");
                 req.setTextAnswer("Mario Kart Wii");
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/guess", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isAccepted());
@@ -123,7 +123,7 @@ class GameControllerTest {
                 req.setPlayerId("player-1");
                 req.setPhase("INVALID");
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/guess", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isBadRequest());
@@ -137,7 +137,7 @@ class GameControllerTest {
                 List<Round> rounds = List.of(buildRound(1, GuessPhase.SPOT));
                 when(gameUseCase.getResults(ROOM_CODE)).thenReturn(rounds);
 
-                mockMvc.perform(get("/api/v1/rooms/{code}/results", ROOM_CODE))
+                mockMvc.perform(get("/api/v1/games/{code}/results", ROOM_CODE))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.roomCode").value(ROOM_CODE))
                                 .andExpect(jsonPath("$.rounds").isArray())
@@ -159,7 +159,7 @@ class GameControllerTest {
                 req.setHostId("host-1");
                 req.setPlayerIds(List.of("host-1"));
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/start", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/start", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isConflict());
@@ -171,7 +171,7 @@ class GameControllerTest {
                 when(gameUseCase.getCurrentRound(ROOM_CODE))
                                 .thenThrow(new IllegalStateException("Match is not in progress"));
 
-                mockMvc.perform(get("/api/v1/rooms/{code}/round", ROOM_CODE))
+                mockMvc.perform(get("/api/v1/games/{code}/round", ROOM_CODE))
                                 .andExpect(status().isConflict());
         }
 
@@ -183,7 +183,7 @@ class GameControllerTest {
                 req.setPhase("GAME");
                 req.setTextAnswer("Mario Kart Wii");
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/guess", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isBadRequest());
@@ -201,7 +201,7 @@ class GameControllerTest {
                 req.setGuessY(50.0);
                 req.setGuessZ(-200.0);
 
-                mockMvc.perform(post("/api/v1/rooms/{code}/guess", ROOM_CODE)
+                mockMvc.perform(post("/api/v1/games/{code}/guess", ROOM_CODE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(req)))
                                 .andExpect(status().isAccepted());

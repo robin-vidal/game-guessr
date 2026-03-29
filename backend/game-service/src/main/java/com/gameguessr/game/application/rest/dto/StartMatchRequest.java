@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * Request body for {@code POST /api/v1/rooms/{code}/start}.
+ * Request body for {@code POST /api/v1/games/{code}/start}.
  */
 @Data
 @Schema(description = "Request to start a match for a given room")

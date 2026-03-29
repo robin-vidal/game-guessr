@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
@@ -9,12 +9,12 @@ interface InfoBarTitleProps {
 
 export function InfoBarTitle({ title, subtitle }: Readonly<InfoBarTitleProps>) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
       <span
         style={{
-          fontSize: "20px",
+          fontSize: '20px',
           fontWeight: 500,
-          color: "hsl(var(--foreground))",
+          color: 'hsl(var(--foreground))',
           lineHeight: 1.2,
         }}
       >
@@ -22,8 +22,8 @@ export function InfoBarTitle({ title, subtitle }: Readonly<InfoBarTitleProps>) {
       </span>
       <span
         style={{
-          fontSize: "13px",
-          color: "hsl(var(--secondary-foreground))",
+          fontSize: '13px',
+          color: 'hsl(var(--secondary-foreground))',
           lineHeight: 1.4,
         }}
       >
@@ -33,32 +33,31 @@ export function InfoBarTitle({ title, subtitle }: Readonly<InfoBarTitleProps>) {
   );
 }
 
-
 // ─── InfoBar ──────────────────────────────────────────────────────────────────
 
 interface InfoBarProps {
   title?: string;
   subtitle?: string;
   content: ReactNode;
-  actions: ReactNode
+  actions: ReactNode;
 }
 
 export function InfoBar({
-  title = "GameGuessr",
-  subtitle = "Guess the game from a single screenshot",
+  title = 'GameGuessr',
+  subtitle = 'Guess the game from a single screenshot',
   content = <></>,
   actions = <></>,
 }: Readonly<InfoBarProps>) {
   return (
     <div
       style={{
-        background: "hsl(var(--background))",
-        borderRadius: "var(--radius)",
-        padding: "20px 24px",
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-        flexWrap: "wrap",
+        background: 'hsl(var(--background))',
+        borderRadius: 'var(--radius)',
+        padding: '20px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        flexWrap: 'wrap',
       }}
     >
       <InfoBarTitle title={title} subtitle={subtitle} />
@@ -66,9 +65,9 @@ export function InfoBar({
 
       <div
         style={{
-          marginLeft: "auto",
-          display: "flex",
-          gap: "8px",
+          marginLeft: 'auto',
+          display: 'flex',
+          gap: '8px',
           flexShrink: 0,
         }}
       >
