@@ -84,4 +84,16 @@ class JwtTokenServiceTest {
         assertThat(username1).isEqualTo(username2);
         assertThat(username1).isEqualTo(USERNAME);
     }
+
+    @Test
+    @DisplayName("parseToken — extracts JwtTokenInfo from valid token")
+    void parseToken_extractsTokenInfo() {
+        String token = jwtTokenService.generateToken(USER_ID, USERNAME);
+
+        var tokenInfo = jwtTokenService.parseToken(token);
+
+        assertThat(tokenInfo).isNotNull();
+        assertThat(tokenInfo.getUserId()).isEqualTo(USER_ID);
+        assertThat(tokenInfo.getUsername()).isEqualTo(USERNAME);
+    }
 }

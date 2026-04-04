@@ -67,7 +67,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 ```bash
 mvn test
-# → Tests run: 46, Failures: 0, Errors: 0
+# → Tests run: 50, Failures: 0, Errors: 0
 ```
 
 ---
@@ -102,6 +102,7 @@ Service will be available at **http://localhost:8081/swagger-ui.html**
 | `POST` | `/api/auth/register` | Register a new user |
 | `POST` | `/api/auth/login` | Authenticate and receive JWT token |
 | `POST` | `/api/auth/logout` | Invalidate JWT token (requires `Authorization: Bearer <token>`) |
+| `GET` | `/api/auth/me` | Get current user info from JWT token (requires `Authorization: Bearer <token>`) |
 
 ### Register
 
@@ -144,6 +145,19 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Response 204 No Content
 ```
 
+### Me
+
+```
+GET /api/auth/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Response 200:
+{
+  "userId": "uuid",
+  "username": "player1"
+}
+```
+
 Full documentation: **http://localhost:8081/swagger-ui.html**
 
 ---
@@ -155,11 +169,10 @@ Full documentation: **http://localhost:8081/swagger-ui.html**
 ```
 src/main/java/com/gameguessr/auth/
 ├── domain/                  ← Pure business logic (no framework imports)
-│   ├── model/               User
-│   ├── port/
-│   │   ├── inbound/         AuthUseCase, JwkUseCase (interfaces)
-│   │   └── outbound/        UserRepository, TokenService, TokenBlacklist (interfaces)
-│   └── exception/           Domain exceptions
+│   ├── model/               User, JwtTokenInfo, LoginResult
+│   └── port/
+│       ├── inbound/         AuthUseCase, JwkUseCase (interfaces)
+│       └── outbound/        UserRepository, TokenService, TokenBlacklist (interfaces)
 ├── application/             ← Use case orchestration + REST adapters
 │   ├── service/             AuthApplicationService, JwkApplicationService
 │   └── rest/                AuthController, JwkController, GlobalExceptionHandler, DTOs

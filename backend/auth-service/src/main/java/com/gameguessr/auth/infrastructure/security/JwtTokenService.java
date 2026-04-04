@@ -1,5 +1,6 @@
 package com.gameguessr.auth.infrastructure.security;
 
+import com.gameguessr.auth.domain.model.JwtTokenInfo;
 import com.gameguessr.auth.domain.port.outbound.TokenService;
 import com.gameguessr.auth.infrastructure.config.JwtProperties;
 import io.jsonwebtoken.Claims;
@@ -84,5 +85,19 @@ public class JwtTokenService implements TokenService {
                 .getPayload();
 
         return UUID.fromString(claims.get("userId", String.class));
+    }
+
+    @Override
+    public JwtTokenInfo parseToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return JwtTokenInfo.builder()
+                .userId(UUID.fromString(claims.get("userId", String.class)))
+                .username(claims.getSubject())
+                .build();
     }
 }
