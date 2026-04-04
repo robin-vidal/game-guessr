@@ -1,5 +1,7 @@
 package com.gameguessr.auth.application.service;
 
+import com.gameguessr.auth.domain.model.JwtTokenInfo;
+import com.gameguessr.auth.domain.model.LoginResult;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.inbound.AuthUseCase;
 import com.gameguessr.auth.domain.port.outbound.TokenBlacklist;
@@ -35,7 +37,7 @@ public class AuthApplicationService implements AuthUseCase {
     }
 
     @Override
-    public User login(String username, String password) {
+    public LoginResult login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
@@ -43,12 +45,22 @@ public class AuthApplicationService implements AuthUseCase {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        tokenService.generateToken(user.getId(), user.getUsername());
-        return user;
+        String token = tokenService.generateToken(user.getId(), user.getUsername());
+
+        return LoginResult.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .token(token)
+                .build();
     }
 
     @Override
     public void logout(String token) {
         tokenBlacklist.invalidate(token);
+    }
+
+    @Override
+    public JwtTokenInfo getMe(String token) {
+        return tokenService.parseToken(token);
     }
 }

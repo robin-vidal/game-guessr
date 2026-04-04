@@ -1,5 +1,6 @@
 package com.gameguessr.auth.application.service;
 
+import com.gameguessr.auth.domain.model.LoginResult;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.outbound.TokenBlacklist;
 import com.gameguessr.auth.domain.port.outbound.UserRepository;
@@ -98,8 +99,8 @@ class AuthApplicationServiceTest {
     // ── login ────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("login — returns user for valid credentials")
-    void login_validCredentials_returnsUser() {
+    @DisplayName("login — returns LoginResult for valid credentials")
+    void login_validCredentials_returnsLoginResult() {
         UUID userId = UUID.randomUUID();
         User user = User.builder()
                 .id(userId)
@@ -112,10 +113,11 @@ class AuthApplicationServiceTest {
         when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
         when(tokenService.generateToken(userId, USERNAME)).thenReturn(expectedToken);
 
-        User result = authService.login(USERNAME, RAW_PASSWORD);
+        LoginResult result = authService.login(USERNAME, RAW_PASSWORD);
 
-        assertThat(result.getId()).isEqualTo(userId);
+        assertThat(result.getUserId()).isEqualTo(userId);
         assertThat(result.getUsername()).isEqualTo(USERNAME);
+        assertThat(result.getToken()).isEqualTo(expectedToken);
     }
 
     @Test

@@ -3,6 +3,8 @@ package com.gameguessr.auth.application.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gameguessr.auth.application.rest.dto.LoginRequest;
 import com.gameguessr.auth.application.rest.dto.RegisterRequest;
+import com.gameguessr.auth.domain.model.JwtTokenInfo;
+import com.gameguessr.auth.domain.model.LoginResult;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.inbound.AuthUseCase;
 import com.gameguessr.auth.domain.port.outbound.TokenService;
@@ -125,14 +127,14 @@ class AuthControllerTest {
     void login_validCredentials_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = "jwt.token.here";
-        User user = User.builder()
-                .id(userId)
+
+        LoginResult loginResult = LoginResult.builder()
+                .userId(userId)
                 .username(USERNAME)
-                .password("encodedPassword")
+                .token(token)
                 .build();
 
-        when(authUseCase.login(USERNAME, PASSWORD)).thenReturn(user);
-        when(tokenService.generateToken(userId, USERNAME)).thenReturn(token);
+        when(authUseCase.login(USERNAME, PASSWORD)).thenReturn(loginResult);
 
         LoginRequest req = new LoginRequest();
         req.setUsername(USERNAME);
@@ -219,5 +221,45 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized());
 
         verify(authUseCase, never()).logout(any());
+    }
+
+    // ── GET /me ──────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("GET /me — 200 with user info from valid token")
+    void me_validToken_returns200() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String token = "valid.jwt.token";
+        JwtTokenInfo tokenInfo = JwtTokenInfo.builder()
+                .userId(userId)
+                .username(USERNAME)
+                .build();
+
+        when(authUseCase.getMe(token)).thenReturn(tokenInfo);
+
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.username").value(USERNAME));
+    }
+
+    @Test
+    @DisplayName("GET /me — 401 with missing authorization header")
+    void me_missingAuthHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized());
+
+        verify(authUseCase, never()).getMe(any());
+    }
+
+    @Test
+    @DisplayName("GET /me — 401 with invalid authorization format")
+    void me_invalidAuthFormat_returns401() throws Exception {
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "InvalidFormat token"))
+                .andExpect(status().isUnauthorized());
+
+        verify(authUseCase, never()).getMe(any());
     }
 }

@@ -2,10 +2,12 @@ package com.gameguessr.auth.application.rest;
 
 import com.gameguessr.auth.application.rest.dto.AuthResponse;
 import com.gameguessr.auth.application.rest.dto.LoginRequest;
+import com.gameguessr.auth.application.rest.dto.MeResponse;
 import com.gameguessr.auth.application.rest.dto.RegisterRequest;
+import com.gameguessr.auth.domain.model.JwtTokenInfo;
+import com.gameguessr.auth.domain.model.LoginResult;
 import com.gameguessr.auth.domain.model.User;
 import com.gameguessr.auth.domain.port.inbound.AuthUseCase;
-import com.gameguessr.auth.domain.port.outbound.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +33,6 @@ public class AuthController {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final AuthUseCase authUseCase;
-    private final TokenService tokenService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,11 +57,12 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        User user = authUseCase.login(request.getUsername(), request.getPassword());
+        LoginResult loginResult = authUseCase.login(request.getUsername(), request.getPassword());
 
         AuthResponse response = AuthResponse.builder()
-                .id(user.getId())
-                .token(tokenService.generateToken(user.getId(), user.getUsername()))
+                .id(loginResult.getUserId())
+                .username(loginResult.getUsername())
+                .token(loginResult.getToken())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -78,5 +81,26 @@ public class AuthController {
 
         String token = authorization.substring(BEARER_PREFIX.length());
         authUseCase.logout(token);
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get current user info from JWT token", responses = {
+            @ApiResponse(responseCode = "200", description = "User info retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid authorization header")
+    })
+    public ResponseEntity<MeResponse> me(@RequestHeader(value = "Authorization", required = false) String authorization) {
+        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid authorization header");
+        }
+
+        String token = authorization.substring(BEARER_PREFIX.length());
+        JwtTokenInfo tokenInfo = authUseCase.getMe(token);
+
+        MeResponse response = MeResponse.builder()
+                .userId(tokenInfo.getUserId())
+                .username(tokenInfo.getUsername())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }

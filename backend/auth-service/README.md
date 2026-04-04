@@ -67,7 +67,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 ```bash
 mvn test
-# → Tests run: 41, Failures: 0, Errors: 0
+# → Tests run: 50, Failures: 0, Errors: 0
 ```
 
 ---
@@ -102,6 +102,7 @@ Service will be available at **http://localhost:8081/swagger-ui.html**
 | `POST` | `/api/auth/register` | Register a new user |
 | `POST` | `/api/auth/login` | Authenticate and receive JWT token |
 | `POST` | `/api/auth/logout` | Invalidate JWT token (requires `Authorization: Bearer <token>`) |
+| `GET` | `/api/auth/me` | Get current user info from JWT token (requires `Authorization: Bearer <token>`) |
 
 ### Register
 
@@ -130,7 +131,8 @@ POST /api/auth/login
 
 Response 200:
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "id": "uuid",
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
@@ -141,6 +143,19 @@ POST /api/auth/logout
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 Response 204 No Content
+```
+
+### Me
+
+```
+GET /api/auth/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Response 200:
+{
+  "userId": "uuid",
+  "username": "player1"
+}
 ```
 
 Full documentation: **http://localhost:8081/swagger-ui.html**
@@ -154,14 +169,13 @@ Full documentation: **http://localhost:8081/swagger-ui.html**
 ```
 src/main/java/com/gameguessr/auth/
 ├── domain/                  ← Pure business logic (no framework imports)
-│   ├── model/               User
-│   ├── port/
-│   │   ├── inbound/         AuthUseCase (interface)
-│   │   └── outbound/        UserRepository, TokenService, TokenBlacklist (interfaces)
-│   └── exception/           Domain exceptions
+│   ├── model/               User, JwtTokenInfo, LoginResult
+│   └── port/
+│       ├── inbound/         AuthUseCase, JwkUseCase (interfaces)
+│       └── outbound/        UserRepository, TokenService, TokenBlacklist (interfaces)
 ├── application/             ← Use case orchestration + REST adapters
-│   ├── service/             AuthApplicationService, TokenService
-│   └── rest/                AuthController, GlobalExceptionHandler, DTOs
+│   ├── service/             AuthApplicationService, JwkApplicationService
+│   └── rest/                AuthController, JwkController, GlobalExceptionHandler, DTOs
 └── infrastructure/          ← Framework adapters
     ├── persistence/          UserEntity, UserJpaRepository, UserRepositoryAdapter
     ├── config/               SecurityConfig, JwtProperties, OpenApiConfig
@@ -215,14 +229,25 @@ src/main/java/com/gameguessr/auth/
 
 | Property | Description | Default |
 |---|---|---|
-| `jwt.secret` | HMAC-SHA256 signing key | `dev-secret-key-change-in-production-at-least-256-bits` |
+| `jwt.rsa-private-key` | RSA private key (PEM) | **Required** - no default |
+| `jwt.rsa-public-key` | RSA public key (PEM) | **Required** - no default |
 | `jwt.expiration` | Token validity (ms) | `86400000` (24h) |
 
 ⚠️ **Production**: Set these via environment variables:
 ```bash
-export JWT_SECRET="your-256-bit-production-secret-key"
+export JWT_RSA_PRIVATE_KEY="$(cat /path/to/private.pem)"
+export JWT_RSA_PUBLIC_KEY="$(cat /path/to/public.pem)"
 export JWT_EXPIRATION="86400000"
 ```
+
+### JWKS Endpoint
+
+The service exposes a public key in JWKS format at:
+```
+GET /.well-known/jwks.json
+```
+
+This allows other services to verify JWT signatures without sharing the private key.
 
 ---
 
@@ -237,7 +262,8 @@ docker build -t gameguessr/auth-service:latest .
 Run:
 ```bash
 docker run -p 8081:8081 \
-  -e JWT_SECRET=your-secret-key \
+  -e JWT_RSA_PRIVATE_KEY="$(cat private.pem)" \
+  -e JWT_RSA_PUBLIC_KEY="$(cat public.pem)" \
   -e DB_HOST=postgres \
   -e DB_NAME=authdb \
   -e DB_USER=authuser \
